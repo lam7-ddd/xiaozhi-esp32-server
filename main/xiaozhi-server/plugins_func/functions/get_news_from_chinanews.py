@@ -13,25 +13,25 @@ GET_NEWS_FROM_CHINANEWS_FUNCTION_DESC = {
     "function": {
         "name": "get_news_from_chinanews",
         "description": (
-            "获取最新新闻，随机选择一条新闻进行播报。"
-            "用户可以指定新闻类型，如社会新闻、科技新闻、国际新闻等。"
-            "如果没有指定，默认播报社会新闻。"
-            "用户可以要求获取详细内容，此时会获取新闻的详细内容。"
+            "最新ニュースを取得し、ランダムに1つのニュースを選んで報道します。"
+            "ユーザーは社会ニュース、科学技術ニュース、国際ニュースなどのニュースの種類を指定できます。"
+            "指定がない場合は、デフォルトで社会ニュースを報道します。"
+            "ユーザーは詳細な内容を要求することができ、その場合はニュースの詳細な内容を取得します。"
         ),
         "parameters": {
             "type": "object",
             "properties": {
                 "category": {
                     "type": "string",
-                    "description": "新闻类别，例如社会、科技、国际。可选参数，如果不提供则使用默认类别",
+                    "description": "ニュースのカテゴリ、例：社会、科学技術、国際。オプションのパラメータで、指定しない場合はデフォルトのカテゴリが使用されます",
                 },
                 "detail": {
                     "type": "boolean",
-                    "description": "是否获取详细内容，默认为false。如果为true，则获取上一条新闻的详细内容",
+                    "description": "詳細な内容を取得するかどうか、デフォルトはfalseです。trueの場合、前のニュースの詳細な内容を取得します",
                 },
                 "lang": {
                     "type": "string",
-                    "description": "返回用户使用的语言code，例如zh_CN/zh_HK/en_US/ja_JP等，默认zh_CN",
+                    "description": "ユーザーが使用する言語コードを返します。例：zh_CN/zh_HK/en_US/ja_JPなど。デフォルトはzh_CNです",
                 },
             },
             "required": ["lang"],
@@ -41,30 +41,30 @@ GET_NEWS_FROM_CHINANEWS_FUNCTION_DESC = {
 
 
 def fetch_news_from_rss(rss_url):
-    """从RSS源获取新闻列表"""
+    """RSSフィードからニュースリストを取得する"""
     try:
         response = requests.get(rss_url)
         response.raise_for_status()
 
-        # 解析XML
+        # XMLを解析
         root = ET.fromstring(response.content)
 
-        # 查找所有item元素（新闻条目）
+        # すべてのitem要素（ニュース項目）を検索
         news_items = []
         for item in root.findall(".//item"):
             title = (
-                item.find("title").text if item.find("title") is not None else "无标题"
+                item.find("title").text if item.find("title") is not None else "タイトルなし"
             )
             link = item.find("link").text if item.find("link") is not None else "#"
             description = (
                 item.find("description").text
                 if item.find("description") is not None
-                else "无描述"
+                else "説明なし"
             )
             pubDate = (
                 item.find("pubDate").text
                 if item.find("pubDate") is not None
-                else "未知时间"
+                else "不明な時間"
             )
 
             news_items.append(
@@ -78,19 +78,19 @@ def fetch_news_from_rss(rss_url):
 
         return news_items
     except Exception as e:
-        logger.bind(tag=TAG).error(f"获取RSS新闻失败: {e}")
+        logger.bind(tag=TAG).error(f"RSSニュースの取得に失敗しました: {e}")
         return []
 
 
 def fetch_news_detail(url):
-    """获取新闻详情页内容并总结"""
+    """ニュース詳細ページの内容を取得して要約する"""
     try:
         response = requests.get(url)
         response.raise_for_status()
 
         soup = BeautifulSoup(response.content, "html.parser")
 
-        # 尝试提取正文内容 (这里的选择器需要根据实际网站结构调整)
+        # 本文の内容を抽出しようと試みる（ここのセレクタは実際のウェブサイトの構造に合わせて調整する必要があります）
         content_div = soup.select_one(
             ".content_desc, .content, article, .article-content"
         )
@@ -101,41 +101,41 @@ def fetch_news_detail(url):
             )
             return content
         else:
-            # 如果找不到特定的内容区域，尝试获取所有段落
+            # 特定のコンテンツ領域が見つからない場合は、すべての段落を取得しようと試みる
             paragraphs = soup.find_all("p")
             content = "\n".join(
                 [p.get_text().strip() for p in paragraphs if p.get_text().strip()]
             )
-            return content[:2000]  # 限制长度
+            return content[:2000]  # 長さを制限
     except Exception as e:
-        logger.bind(tag=TAG).error(f"获取新闻详情失败: {e}")
-        return "无法获取详细内容"
+        logger.bind(tag=TAG).error(f"ニュース詳細の取得に失敗しました: {e}")
+        return "詳細な内容を取得できません"
 
 
 def map_category(category_text):
-    """将用户输入的中文类别映射到配置文件中的类别键"""
+    """ユーザーが入力した中国語のカテゴリを構成ファイル内のカテゴリキーにマッピングする"""
     if not category_text:
         return None
 
-    # 类别映射字典，目前支持社会、国际、财经新闻，如需更多类型，参见配置文件
+    # カテゴリマッピング辞書、現在サポートしているのは社会、国際、財経ニュースです。他の種類が必要な場合は構成ファイルを参照してください
     category_map = {
-        # 社会新闻
+        # 社会ニュース
         "社会": "society_rss_url",
         "社会新闻": "society_rss_url",
-        # 国际新闻
+        # 国際ニュース
         "国际": "world_rss_url",
         "国际新闻": "world_rss_url",
-        # 财经新闻
+        # 財経ニュース
         "财经": "finance_rss_url",
         "财经新闻": "finance_rss_url",
         "金融": "finance_rss_url",
         "经济": "finance_rss_url",
     }
 
-    # 转换为小写并去除空格
+    # 小文字に変換してスペースを削除
     normalized_category = category_text.lower().strip()
 
-    # 返回映射结果，如果没有匹配项则返回原始输入
+    # マッピング結果を返す、一致する項目がない場合は元の入力を返す
     return category_map.get(normalized_category, category_text)
 
 
@@ -147,9 +147,9 @@ def map_category(category_text):
 def get_news_from_chinanews(
     conn, category: str = None, detail: bool = False, lang: str = "zh_CN"
 ):
-    """获取新闻并随机选择一条进行播报，或获取上一条新闻的详细内容"""
+    """ニュースを取得し、ランダムに1つ選んで報道するか、前のニュースの詳細を取得する"""
     try:
-        # 如果detail为True，获取上一条新闻的详细内容
+        # detailがTrueの場合、前のニュースの詳細を取得する
         if detail:
             if (
                 not hasattr(conn, "last_news_link")
@@ -158,43 +158,43 @@ def get_news_from_chinanews(
             ):
                 return ActionResponse(
                     Action.REQLLM,
-                    "抱歉，没有找到最近查询的新闻，请先获取一条新闻。",
+                    "申し訳ありませんが、最近照会されたニュースが見つかりませんでした。まずニュースを1件取得してください。",
                     None,
                 )
 
             link = conn.last_news_link.get("link")
-            title = conn.last_news_link.get("title", "未知标题")
+            title = conn.last_news_link.get("title", "不明なタイトル")
 
             if link == "#":
                 return ActionResponse(
-                    Action.REQLLM, "抱歉，该新闻没有可用的链接获取详细内容。", None
+                    Action.REQLLM, "申し訳ありませんが、このニュースには詳細を取得するためのリンクがありません。", None
                 )
 
-            logger.bind(tag=TAG).debug(f"获取新闻详情: {title}, URL={link}")
+            logger.bind(tag=TAG).debug(f"ニュース詳細の取得: {title}, URL={link}")
 
-            # 获取新闻详情
+            # ニュース詳細の取得
             detail_content = fetch_news_detail(link)
 
-            if not detail_content or detail_content == "无法获取详细内容":
+            if not detail_content or detail_content == "詳細な内容を取得できません":
                 return ActionResponse(
                     Action.REQLLM,
-                    f"抱歉，无法获取《{title}》的详细内容，可能是链接已失效或网站结构发生变化。",
+                    f"申し訳ありませんが、『{title}』の詳細な内容を取得できませんでした。リンクが切れているか、ウェブサイトの構造が変更された可能性があります。",
                     None,
                 )
 
-            # 构建详情报告
+            # 詳細レポートの作成
             detail_report = (
-                f"根据下列数据，用{lang}回应用户的新闻详情查询请求：\n\n"
-                f"新闻标题: {title}\n"
-                f"详细内容: {detail_content}\n\n"
-                f"(请对上述新闻内容进行总结，提取关键信息，以自然、流畅的方式向用户播报，"
-                f"不要提及这是总结，就像是在讲述一个完整的新闻故事)"
+                f"以下のデータに基づき、{lang}でユーザーのニュース詳細照会リクエストに応答してください：\n\n"
+                f"ニュースタイトル: {title}\n"
+                f"詳細内容: {detail_content}\n\n"
+                f"（上記ニュース内容を要約し、重要な情報を抽出し、自然で流暢な方法でユーザーに報道してください。"
+                f"これが要約であることには触れず、まるで完全なニュースストーリーを語っているかのようにしてください）"
             )
 
             return ActionResponse(Action.REQLLM, detail_report, None)
 
-        # 否则，获取新闻列表并随机选择一条
-        # 从配置中获取RSS URL
+        # そうでなければ、ニュースリストを取得してランダムに1つ選ぶ
+        # 設定からRSS URLを取得
         rss_config = conn.config["plugins"]["get_news_from_chinanews"]
         default_rss_url = rss_config.get(
             "default_rss_url", "https://www.chinanews.com.cn/rss/society.xml"

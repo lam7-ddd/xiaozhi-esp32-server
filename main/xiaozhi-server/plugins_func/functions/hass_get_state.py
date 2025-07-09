@@ -11,13 +11,13 @@ hass_get_state_function_desc = {
     "type": "function",
     "function": {
         "name": "hass_get_state",
-        "description": "获取homeassistant里设备的状态,包括查询灯光亮度、颜色、色温,媒体播放器的音量,设备的暂停、继续操作",
+        "description": "Home Assistantのデバイスの状態を取得します。照明の明るさ、色、色温度、メディアプレーヤーの音量、デバイスの一時停止、再開操作のクエリが含まれます。"
         "parameters": {
             "type": "object",
             "properties": {
                 "entity_id": {
                     "type": "string",
-                    "description": "需要操作的设备id,homeassistant里的entity_id",
+                    "description": "操作が必要なデバイスのID、Home Assistantのentity_id"
                 }
             },
             "required": ["entity_id"],
@@ -36,7 +36,7 @@ def hass_get_state(conn, entity_id=""):
         ha_response = future.result()
         return ActionResponse(Action.REQLLM, ha_response, None)
     except Exception as e:
-        logger.bind(tag=TAG).error(f"处理设置属性意图错误: {e}")
+        logger.bind(tag=TAG).error(f"属性設定インテントの処理エラー: {e}")
 
 
 async def handle_hass_get_state(conn, entity_id):
@@ -47,48 +47,48 @@ async def handle_hass_get_state(conn, entity_id):
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
-        responsetext = "设备状态:" + response.json()["state"] + " "
-        logger.bind(tag=TAG).info(f"api返回内容: {response.json()}")
+        responsetext = "デバイスの状態:" + response.json()["state"] + " "
+        logger.bind(tag=TAG).info(f"APIからのレスポンス内容: {response.json()}")
 
         if "media_title" in response.json()["attributes"]:
             responsetext = (
                 responsetext
-                + "正在播放的是:"
+                + "再生中:"
                 + str(response.json()["attributes"]["media_title"])
                 + " "
             )
         if "volume_level" in response.json()["attributes"]:
             responsetext = (
                 responsetext
-                + "音量是:"
+                + "音量:"
                 + str(response.json()["attributes"]["volume_level"])
                 + " "
             )
         if "color_temp_kelvin" in response.json()["attributes"]:
             responsetext = (
                 responsetext
-                + "色温是:"
+                + "色温度:"
                 + str(response.json()["attributes"]["color_temp_kelvin"])
                 + " "
             )
         if "rgb_color" in response.json()["attributes"]:
             responsetext = (
                 responsetext
-                + "rgb颜色是:"
+                + "RGBカラー:"
                 + str(response.json()["attributes"]["rgb_color"])
                 + " "
             )
         if "brightness" in response.json()["attributes"]:
             responsetext = (
                 responsetext
-                + "亮度是:"
+                + "明るさ:"
                 + str(response.json()["attributes"]["brightness"])
                 + " "
             )
-        logger.bind(tag=TAG).info(f"查询返回内容: {responsetext}")
+        logger.bind(tag=TAG).info(f"クエリのレスポンス内容: {responsetext}")
         return responsetext
         # return response.json()['attributes']
         # response.attributes
 
     else:
-        return f"切换失败，错误码: {response.status_code}"
+        return f"切り替えに失敗しました、エラーコード: {response.status_code}"

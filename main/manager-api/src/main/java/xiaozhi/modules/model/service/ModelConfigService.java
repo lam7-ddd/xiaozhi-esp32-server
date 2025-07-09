@@ -22,27 +22,27 @@ public interface ModelConfigService extends BaseService<ModelConfigEntity> {
     void delete(String id);
 
     /**
-     * 根据ID获取模型名称
+     * IDによりモデル名を取得
      * 
-     * @param id 模型ID
-     * @return 模型名称
+     * @param id モデルID
+     * @return モデル名
      */
     String getModelNameById(String id);
 
     /**
-     * 根据ID获取模型配置
+     * IDによりモデル設定を取得
      * 
-     * @param id      模型ID
-     * @param isCache 是否缓存
-     * @return 模型配置实体
+     * @param id      モデルID
+     * @param isCache キャッシュするかどうか
+     * @return モデル設定エンティティ
      */
     ModelConfigEntity getModelById(String id, boolean isCache);
 
     /**
-     * 设置默认模型
+     * デフォルトモデルを設定
      * 
-     * @param modelType 模型类型
-     * @param isDefault 是否默认
+     * @param modelType モデルタイプ
+     * @param isDefault デフォルトかどうか
      */
     void setDefaultModel(String modelType, int isDefault);
 }

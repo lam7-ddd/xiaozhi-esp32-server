@@ -11,17 +11,17 @@ hass_play_music_function_desc = {
     "type": "function",
     "function": {
         "name": "hass_play_music",
-        "description": "用户想听音乐、有声书的时候使用，在房间的媒体播放器（media_player）里播放对应音频",
+        "description": "ユーザーが音楽やオーディオブックを聴きたいときに使用し、部屋のメディアプレーヤー（media_player）で対応するオーディオを再生します", 
         "parameters": {
             "type": "object",
             "properties": {
                 "media_content_id": {
                     "type": "string",
-                    "description": "可以是音乐或有声书的专辑名称、歌曲名、演唱者,如果未指定就填random",
+                    "description": "音楽やオーディオブックのアルバム名、曲名、アーティスト名などを指定できます。指定しない場合は「random」と入力してください",
                 },
                 "entity_id": {
                     "type": "string",
-                    "description": "需要操作的音箱的设备id,homeassistant里的entity_id,media_player开头",
+                    "description": "操作が必要なスピーカーのデバイスID、Home Assistantのentity_idで、media_playerで始まります",
                 },
             },
             "required": ["media_content_id", "entity_id"],
@@ -35,16 +35,16 @@ hass_play_music_function_desc = {
 )
 def hass_play_music(conn, entity_id="", media_content_id="random"):
     try:
-        # 执行音乐播放命令
+        # 音楽再生コマンドを実行
         future = asyncio.run_coroutine_threadsafe(
             handle_hass_play_music(conn, entity_id, media_content_id), conn.loop
         )
         ha_response = future.result()
         return ActionResponse(
-            action=Action.RESPONSE, result="退出意图已处理", response=ha_response
+            action=Action.RESPONSE, result="音楽再生の意図は処理されました", response=ha_response
         )
     except Exception as e:
-        logger.bind(tag=TAG).error(f"处理音乐意图错误: {e}")
+        logger.bind(tag=TAG).error(f"音楽の意図の処理中にエラーが発生しました: {e}")
 
 
 async def handle_hass_play_music(conn, entity_id, media_content_id):
@@ -56,6 +56,6 @@ async def handle_hass_play_music(conn, entity_id, media_content_id):
     data = {"entity_id": entity_id, "media_id": media_content_id}
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
-        return f"正在播放{media_content_id}的音乐"
+        return f"{media_content_id}の音楽を再生しています"
     else:
-        return f"音乐播放失败，错误码: {response.status_code}"
+        return f"音楽の再生に失敗しました、エラーコード: {response.status_code}"
