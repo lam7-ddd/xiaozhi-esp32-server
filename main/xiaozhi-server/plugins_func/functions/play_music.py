@@ -21,13 +21,13 @@ play_music_function_desc = {
     "type": "function",
     "function": {
         "name": "play_music",
-        "description": "唱歌、听歌、播放音乐的方法。",
+        "description": "歌を歌う、音楽を聴く、音楽を再生するためのメソッド。",
         "parameters": {
             "type": "object",
             "properties": {
                 "song_name": {
                     "type": "string",
-                    "description": "歌曲名称，如果用户没有指定具体歌名则为'random', 明确指定的时返回音乐的名字 示例: ```用户:播放两只老虎\n参数：两只老虎``` ```用户:播放音乐 \n参数：random ```",
+                    "description": "曲名。ユーザーが具体的な曲名を指定しない場合は'random'になります。明確に指定された場合は曲名を返します。例: ```ユーザー:「きらきら星」を再生して\nパラメータ:きらきら星``` ```ユーザー:音楽を再生して\nパラメータ:random```",
                 }
             },
             "required": ["song_name"],
@@ -40,44 +40,44 @@ play_music_function_desc = {
 def play_music(conn, song_name: str):
     try:
         music_intent = (
-            f"播放音乐 {song_name}" if song_name != "random" else "随机播放音乐"
+            f"音楽を再生 {song_name}" if song_name != "random" else "音楽をランダム再生"
         )
 
-        # 检查事件循环状态
+        # イベントループの状態を確認
         if not conn.loop.is_running():
-            conn.logger.bind(tag=TAG).error("事件循环未运行，无法提交任务")
+            conn.logger.bind(tag=TAG).error("イベントループが実行されていないため、タスクを送信できません")
             return ActionResponse(
-                action=Action.RESPONSE, result="系统繁忙", response="请稍后再试"
+                action=Action.RESPONSE, result="システムがビジーです", response="しばらくしてからもう一度お試しください"
             )
 
-        # 提交异步任务
+        # 非同期タスクを送信
         future = asyncio.run_coroutine_threadsafe(
             handle_music_command(conn, music_intent), conn.loop
         )
 
-        # 非阻塞回调处理
+        # ノンブロッキングコールバック処理
         def handle_done(f):
             try:
-                f.result()  # 可在此处理成功逻辑
-                conn.logger.bind(tag=TAG).info("播放完成")
+                f.result()  # ここで成功ロジックを処理できます
+                conn.logger.bind(tag=TAG).info("再生完了")
             except Exception as e:
-                conn.logger.bind(tag=TAG).error(f"播放失败: {e}")
+                conn.logger.bind(tag=TAG).error(f"再生失敗: {e}")
 
         future.add_done_callback(handle_done)
 
         return ActionResponse(
-            action=Action.NONE, result="指令已接收", response="正在为您播放音乐"
+            action=Action.NONE, result="コマンドを受信しました", response="音楽を再生しています"
         )
     except Exception as e:
-        conn.logger.bind(tag=TAG).error(f"处理音乐意图错误: {e}")
+        conn.logger.bind(tag=TAG).error(f"音楽インテントの処理中にエラーが発生しました: {e}")
         return ActionResponse(
-            action=Action.RESPONSE, result=str(e), response="播放音乐时出错了"
+            action=Action.RESPONSE, result=str(e), response="音楽の再生中にエラーが発生しました"
         )
 
 
 def _extract_song_name(text):
-    """从用户输入中提取歌名"""
-    for keyword in ["播放音乐"]:
+    """ユーザーの入力から曲名を抽出します"""
+    for keyword in ["音楽を再生"]:
         if keyword in text:
             parts = text.split(keyword)
             if len(parts) > 1:
@@ -86,7 +86,7 @@ def _extract_song_name(text):
 
 
 def _find_best_match(potential_song, music_files):
-    """查找最匹配的歌曲"""
+    """最も一致する曲を検索します"""
     best_match = None
     highest_ratio = 0
 
@@ -104,13 +104,13 @@ def get_music_files(music_dir, music_ext):
     music_files = []
     music_file_names = []
     for file in music_dir.rglob("*"):
-        # 判断是否是文件
+        # ファイルかどうかを判断
         if file.is_file():
-            # 获取文件扩展名
+            # ファイルの拡張子を取得
             ext = file.suffix.lower()
-            # 判断扩展名是否在列表中
+            # 拡張子がリストにあるか判断
             if ext in music_ext:
-                # 添加相对路径
+                # 相対パスを追加
                 music_files.append(str(file.relative_to(music_dir)))
                 music_file_names.append(
                     os.path.splitext(str(file.relative_to(music_dir)))[0]
@@ -124,7 +124,7 @@ def initialize_music_handler(conn):
         if "play_music" in conn.config["plugins"]:
             MUSIC_CACHE["music_config"] = conn.config["plugins"]["play_music"]
             MUSIC_CACHE["music_dir"] = os.path.abspath(
-                MUSIC_CACHE["music_config"].get("music_dir", "./music")  # 默认路径修改
+                MUSIC_CACHE["music_config"].get("music_dir", "./music")  # デフォルトパスの変更
             )
             MUSIC_CACHE["music_ext"] = MUSIC_CACHE["music_config"].get(
                 "music_ext", (".mp3", ".wav", ".p3")
@@ -136,7 +136,7 @@ def initialize_music_handler(conn):
             MUSIC_CACHE["music_dir"] = os.path.abspath("./music")
             MUSIC_CACHE["music_ext"] = (".mp3", ".wav", ".p3")
             MUSIC_CACHE["refresh_time"] = 60
-        # 获取音乐文件列表
+        # 音楽ファイルリストを取得
         MUSIC_CACHE["music_files"], MUSIC_CACHE["music_file_names"] = get_music_files(
             MUSIC_CACHE["music_dir"], MUSIC_CACHE["music_ext"]
         )
@@ -148,14 +148,14 @@ async def handle_music_command(conn, text):
     initialize_music_handler(conn)
     global MUSIC_CACHE
 
-    """处理音乐播放指令"""
+    """音楽再生コマンドを処理します"""
     clean_text = re.sub(r"[^\w\s]", "", text).strip()
-    conn.logger.bind(tag=TAG).debug(f"检查是否是音乐命令: {clean_text}")
+    conn.logger.bind(tag=TAG).debug(f"音楽コマンドかどうかを確認: {clean_text}")
 
-    # 尝试匹配具体歌名
+    # 具体的な曲名との一致を試みます
     if os.path.exists(MUSIC_CACHE["music_dir"]):
         if time.time() - MUSIC_CACHE["scan_time"] > MUSIC_CACHE["refresh_time"]:
-            # 刷新音乐文件列表
+            # 音楽ファイルリストを更新
             MUSIC_CACHE["music_files"], MUSIC_CACHE["music_file_names"] = (
                 get_music_files(MUSIC_CACHE["music_dir"], MUSIC_CACHE["music_ext"])
             )
@@ -165,38 +165,38 @@ async def handle_music_command(conn, text):
         if potential_song:
             best_match = _find_best_match(potential_song, MUSIC_CACHE["music_files"])
             if best_match:
-                conn.logger.bind(tag=TAG).info(f"找到最匹配的歌曲: {best_match}")
+                conn.logger.bind(tag=TAG).info(f"最も一致する曲が見つかりました: {best_match}")
                 await play_local_music(conn, specific_file=best_match)
                 return True
-    # 检查是否是通用播放音乐命令
+    # 一般的な音楽再生コマンドかどうかを確認
     await play_local_music(conn)
     return True
 
 
 def _get_random_play_prompt(song_name):
-    """生成随机播放引导语"""
-    # 移除文件扩展名
+    """ランダム再生用のプロンプトを生成します"""
+    # ファイル拡張子を削除
     clean_name = os.path.splitext(song_name)[0]
     prompts = [
-        f"正在为您播放，{clean_name}",
-        f"请欣赏歌曲，{clean_name}",
-        f"即将为您播放，{clean_name}",
-        f"为您带来，{clean_name}",
-        f"让我们聆听，{clean_name}",
-        f"接下来请欣赏，{clean_name}",
-        f"为您献上，{clean_name}",
+        f"{clean_name}を再生します",
+        f"曲をお楽しみください、{clean_name}",
+        f"まもなく再生します、{clean_name}",
+        f"お届けします、{clean_name}",
+        f"聴きましょう、{clean_name}",
+        f"次にお楽しみください、{clean_name}",
+        f"お送りします、{clean_name}",
     ]
-    # 直接使用random.choice，不设置seed
+    # seedを設定せずにrandom.choiceを直接使用
     return random.choice(prompts)
 
 
 async def play_local_music(conn, specific_file=None):
     global MUSIC_CACHE
-    """播放本地音乐文件"""
+    """ローカルの音楽ファイルを再生します"""
     try:
         if not os.path.exists(MUSIC_CACHE["music_dir"]):
             conn.logger.bind(tag=TAG).error(
-                f"音乐目录不存在: " + MUSIC_CACHE["music_dir"]
+                f"音楽ディレクトリが存在しません: " + MUSIC_CACHE["music_dir"]
             )
             return
 

@@ -12,20 +12,20 @@ GET_WEATHER_FUNCTION_DESC = {
     "function": {
         "name": "get_weather",
         "description": (
-            "获取某个地点的天气，用户应提供一个位置，比如用户说杭州天气，参数为：杭州。"
-            "如果用户说的是省份，默认用省会城市。如果用户说的不是省份或城市而是一个地名，默认用该地所在省份的省会城市。"
-            "如果用户没有指明地点，说“天气怎么样”，”今天天气如何“，location参数为空"
+            "特定の場所の天気を取得します。ユーザーは場所を指定する必要があります。例えば、ユーザーが「杭州の天気」と言った場合、パラメータは「杭州」になります。"
+            "ユーザーが省を言った場合は、デフォルトで省都の都市を使用します。ユーザーが省や都市ではなく地名を言った場合は、デフォルトでその地の省都の都市を使用します。"
+            "ユーザーが場所を指定せず、「天気はどうですか」、「今日の天気は」などと言った場合、locationパラメータは空になります。"
         ),
         "parameters": {
             "type": "object",
             "properties": {
                 "location": {
                     "type": "string",
-                    "description": "地点名，例如杭州。可选参数，如果不提供则不传",
+                    "description": "場所名、例：杭州。オプションのパラメータで、指定しない場合は送信されません",
                 },
                 "lang": {
                     "type": "string",
-                    "description": "返回用户使用的语言code，例如zh_CN/zh_HK/en_US/ja_JP等，默认zh_CN",
+                    "description": "ユーザーが使用する言語コードを返します。例：zh_CN/zh_HK/en_US/ja_JPなど。デフォルトはzh_CNです",
                 },
             },
             "required": ["lang"],
@@ -40,70 +40,70 @@ HEADERS = {
     )
 }
 
-# 天气代码 https://dev.qweather.com/docs/resource/icons/#weather-icons
+# 天気コード https://dev.qweather.com/docs/resource/icons/#weather-icons
 WEATHER_CODE_MAP = {
-    "100": "晴",
-    "101": "多云",
-    "102": "少云",
-    "103": "晴间多云",
-    "104": "阴",
-    "150": "晴",
-    "151": "多云",
-    "152": "少云",
-    "153": "晴间多云",
-    "300": "阵雨",
-    "301": "强阵雨",
-    "302": "雷阵雨",
-    "303": "强雷阵雨",
-    "304": "雷阵雨伴有冰雹",
+    "100": "晴れ",
+    "101": "曇り",
+    "102": "晴れ時々曇り",
+    "103": "晴れ時々曇り",
+    "104": "曇り",
+    "150": "晴れ",
+    "151": "曇り",
+    "152": "晴れ時々曇り",
+    "153": "晴れ時々曇り",
+    "300": "にわか雨",
+    "301": "強いにわか雨",
+    "302": "雷雨",
+    "303": "激しい雷雨",
+    "304": "ひょうを伴う雷雨",
     "305": "小雨",
-    "306": "中雨",
+    "306": "雨",
     "307": "大雨",
-    "308": "极端降雨",
-    "309": "毛毛雨/细雨",
-    "310": "暴雨",
-    "311": "大暴雨",
-    "312": "特大暴雨",
-    "313": "冻雨",
-    "314": "小到中雨",
-    "315": "中到大雨",
-    "316": "大到暴雨",
-    "317": "暴雨到大暴雨",
-    "318": "大暴雨到特大暴雨",
-    "350": "阵雨",
-    "351": "强阵雨",
+    "308": "激しい雨",
+    "309": "霧雨",
+    "310": "豪雨",
+    "311": "大豪雨",
+    "312": "猛烈な豪雨",
+    "313": "着氷性の雨",
+    "314": "小雨から並の雨",
+    "315": "並の雨から大雨",
+    "316": "大雨から豪雨",
+    "317": "豪雨から大豪雨",
+    "318": "大豪雨から猛烈な豪雨",
+    "350": "にわか雨",
+    "351": "強いにわか雨",
     "399": "雨",
     "400": "小雪",
-    "401": "中雪",
+    "401": "雪",
     "402": "大雪",
-    "403": "暴雪",
-    "404": "雨夹雪",
-    "405": "雨雪天气",
-    "406": "阵雨夹雪",
-    "407": "阵雪",
-    "408": "小到中雪",
-    "409": "中到大雪",
-    "410": "大到暴雪",
-    "456": "阵雨夹雪",
-    "457": "阵雪",
+    "403": "豪雪",
+    "404": "みぞれ",
+    "405": "雨または雪",
+    "406": "にわかみぞれ",
+    "407": "にわか雪",
+    "408": "小雪から並の雪",
+    "409": "並の雪から大雪",
+    "410": "大雪から豪雪",
+    "456": "にわかみぞれ",
+    "457": "にわか雪",
     "499": "雪",
-    "500": "薄雾",
-    "501": "雾",
-    "502": "霾",
-    "503": "扬沙",
-    "504": "浮尘",
-    "507": "沙尘暴",
-    "508": "强沙尘暴",
-    "509": "浓雾",
-    "510": "强浓雾",
-    "511": "中度霾",
-    "512": "重度霾",
-    "513": "严重霾",
-    "514": "大雾",
-    "515": "特强浓雾",
-    "900": "热",
-    "901": "冷",
-    "999": "未知",
+    "500": "薄霧",
+    "501": "霧",
+    "502": "ヘイズ",
+    "503": "砂じん",
+    "504": "浮遊じん",
+    "507": "砂嵐",
+    "508": "激しい砂嵐",
+    "509": "濃霧",
+    "510": "非常に濃い霧",
+    "511": "中程度のヘイズ",
+    "512": "重度のヘイズ",
+    "513": "深刻なヘイズ",
+    "514": "濃い霧",
+    "515": "極めて濃い霧",
+    "900": "暑い",
+    "901": "寒い",
+    "999": "不明",
 }
 
 
@@ -123,7 +123,7 @@ def parse_weather_info(soup):
 
     current_abstract = soup.select_one(".c-city-weather-current .current-abstract")
     current_abstract = (
-        current_abstract.get_text(strip=True) if current_abstract else "未知"
+        current_abstract.get_text(strip=True) if current_abstract else "不明"
     )
 
     current_basic = {}
@@ -136,12 +136,12 @@ def parse_weather_info(soup):
             current_basic[key] = value
 
     temps_list = []
-    for row in soup.select(".city-forecast-tabs__row")[:7]:  # 取前7天的数据
+    for row in soup.select(".city-forecast-tabs__row")[:7]:  # 最初の7日間のデータを取得
         date = row.select_one(".date-bg .date").get_text(strip=True)
         weather_code = (
             row.select_one(".date-bg .icon")["src"].split("/")[-1].split(".")[0]
         )
-        weather = WEATHER_CODE_MAP.get(weather_code, "未知")
+        weather = WEATHER_CODE_MAP.get(weather_code, "不明")
         temps = [span.get_text(strip=True) for span in row.select(".tmp-cont .temp")]
         high_temp, low_temp = (temps[0], temps[-1]) if len(temps) >= 2 else (None, None)
         temps_list.append((date, weather, high_temp, low_temp))
@@ -155,41 +155,41 @@ def get_weather(conn, location: str = None, lang: str = "zh_CN"):
     api_key = conn.config["plugins"]["get_weather"].get("api_key", "a861d0d5e7bf4ee1a83d9a9e4f96d4da")
     default_location = conn.config["plugins"]["get_weather"]["default_location"]
     client_ip = conn.client_ip
-    # 优先使用用户提供的location参数
+    # ユーザーが提供したlocationパラメータを優先的に使用します
     if not location:
-        # 通过客户端IP解析城市
+        # クライアントIPを介して都市を解決します
         if client_ip:
-            # 动态解析IP对应的城市信息
+            # IPに対応する都市情報を動的に解決します
             ip_info = get_ip_info(client_ip, logger)
             location = ip_info.get("city") if ip_info and "city" in ip_info else None
         else:
-            # 若IP解析失败或无IP，使用默认位置
+            # IP解決に失敗した場合、またはIPがない場合は、デフォルトの場所を使用します
             location = default_location
     city_info = fetch_city_info(location, api_key, api_host)
     if not city_info:
         return ActionResponse(
-            Action.REQLLM, f"未找到相关的城市: {location}，请确认地点是否正确", None
+            Action.REQLLM, f"関連する都市が見つかりませんでした: {location}、場所が正しいか確認してください", None
         )
     soup = fetch_weather_page(city_info["fxLink"])
     if not soup:
-        return ActionResponse(Action.REQLLM, None, "请求失败")
+        return ActionResponse(Action.REQLLM, None, "リクエストに失敗しました")
     city_name, current_abstract, current_basic, temps_list = parse_weather_info(soup)
 
-    weather_report = f"您查询的位置是：{city_name}\n\n当前天气: {current_abstract}\n"
+    weather_report = f"お問い合わせの場所：{city_name}\n\n現在の天気: {current_abstract}\n"
 
-    # 添加有效的当前天气参数
+    # 有効な現在の天気パラメータを追加
     if current_basic:
-        weather_report += "详细参数：\n"
+        weather_report += "詳細パラメータ：\n"
         for key, value in current_basic.items():
-            if value != "0":  # 过滤无效值
+            if value != "0":  # 無効な値をフィルタリング
                 weather_report += f"  · {key}: {value}\n"
 
-    # 添加7天预报
-    weather_report += "\n未来7天预报：\n"
+    # 7日間予報を追加
+    weather_report += "\n今後7日間の予報：\n"
     for date, weather, high, low in temps_list:
-        weather_report += f"{date}: {weather}，气温 {low}~{high}\n"
+        weather_report += f"{date}: {weather}、気温 {low}~{high}\n"
 
-    # 提示语
-    weather_report += "\n（如需某一天的具体天气，请告诉我日期）"
+    # プロンプト
+    weather_report += "\n（特定の日付の天気が必要な場合は、日付を教えてください）"
 
     return ActionResponse(Action.REQLLM, weather_report, None)

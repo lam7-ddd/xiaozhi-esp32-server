@@ -2,22 +2,22 @@ from datetime import datetime
 import cnlunar
 from plugins_func.register import register_function, ToolType, ActionResponse, Action
 
-# 添加星期映射字典
+# 曜日マッピング辞書を追加
 WEEKDAY_MAP = {
-    "Monday": "星期一",
-    "Tuesday": "星期二",
-    "Wednesday": "星期三",
-    "Thursday": "星期四",
-    "Friday": "星期五",
-    "Saturday": "星期六",
-    "Sunday": "星期日",
+    "Monday": "月曜日",
+    "Tuesday": "火曜日",
+    "Wednesday": "水曜日",
+    "Thursday": "木曜日",
+    "Friday": "金曜日",
+    "Saturday": "土曜日",
+    "Sunday": "日曜日",
 }
 
 get_time_function_desc = {
     "type": "function",
     "function": {
         "name": "get_time",
-        "description": "获取今天日期或者当前时间信息",
+        "description": "今日の日付または現在の時刻情報を取得します", 
         "parameters": {"type": "object", "properties": {}, "required": []},
     },
 }
@@ -26,14 +26,14 @@ get_time_function_desc = {
 @register_function("get_time", get_time_function_desc, ToolType.WAIT)
 def get_time():
     """
-    获取当前的日期时间信息
+    現在の日時情報を取得します
     """
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
     current_date = now.strftime("%Y-%m-%d")
     current_weekday = WEEKDAY_MAP[now.strftime("%A")]
     response_text = (
-        f"当前日期: {current_date}，当前时间: {current_time}， {current_weekday}"
+        f"現在の日付: {current_date}、現在の時刻: {current_time}、{current_weekday}"
     )
 
     return ActionResponse(Action.REQLLM, response_text, None)
@@ -44,9 +44,9 @@ get_lunar_function_desc = {
     "function": {
         "name": "get_lunar",
         "description": (
-            "用于获取今天的阴历/农历和黄历信息。"
-            "用户可以指定查询内容，如：阴历日期、天干地支、节气、生肖、星座、八字、宜忌等。"
-            "如果没有指定查询内容，则默认查询干支年和农历日期。"
+            "今日の旧暦/農暦と黄暦情報を取得するために使用されます。"
+            "ユーザーは、旧暦の日付、干支、節気、十二支、星座、八字、吉凶など、照会内容を指定できます。"
+            "照会内容が指定されていない場合は、デフォルトで干支年と農暦の日付を照会します。"
         ),
         "parameters": {
             "type": "object",

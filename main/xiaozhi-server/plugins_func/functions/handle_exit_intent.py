@@ -8,13 +8,13 @@ handle_exit_intent_function_desc = {
     "type": "function",
     "function": {
         "name": "handle_exit_intent",
-        "description": "当用户想结束对话或需要退出系统时调用",
+        "description": "ユーザーが対話を終了したい、またはシステムを終了する必要がある場合に呼び出されます。"
         "parameters": {
             "type": "object",
             "properties": {
                 "say_goodbye": {
                     "type": "string",
-                    "description": "和用户友好结束对话的告别语",
+                    "description": "ユーザーとの対話を友好的に終了するための別れの言葉。"
                 }
             },
             "required": ["say_goodbye"],
@@ -27,17 +27,17 @@ handle_exit_intent_function_desc = {
     "handle_exit_intent", handle_exit_intent_function_desc, ToolType.SYSTEM_CTL
 )
 def handle_exit_intent(conn, say_goodbye: str | None = None):
-    # 处理退出意图
+    # 終了インテントの処理
     try:
         if say_goodbye is None:
-            say_goodbye = "再见，祝您生活愉快！"
+            say_goodbye = "さようなら、どうぞお元気で！"
         conn.close_after_chat = True
-        logger.bind(tag=TAG).info(f"退出意图已处理:{say_goodbye}")
+        logger.bind(tag=TAG).info(f"終了インテントが処理されました:{say_goodbye}")
         return ActionResponse(
-            action=Action.RESPONSE, result="退出意图已处理", response=say_goodbye
+            action=Action.RESPONSE, result="終了インテントが処理されました", response=say_goodbye
         )
     except Exception as e:
-        logger.bind(tag=TAG).error(f"处理退出意图错误: {e}")
+        logger.bind(tag=TAG).error(f"終了インテントの処理エラー: {e}")
         return ActionResponse(
-            action=Action.NONE, result="退出意图处理失败", response=""
+            action=Action.NONE, result="終了インテントの処理に失敗しました", response=""
         )
