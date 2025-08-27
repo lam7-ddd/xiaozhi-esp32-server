@@ -2,7 +2,7 @@ import { getServiceUrl } from '../api';
 import RequestService from '../httpRequest';
 
 export default {
-    // 已绑设备
+    // バインド済みデバイス
     getAgentBindDevices(agentId, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/device/bind/${agentId}`)
@@ -12,13 +12,13 @@ export default {
                 callback(res);
             })
             .networkFail((err) => {
-                console.error('获取设备列表失败:', err);
+                console.error('デバイスリストの取得に失敗しました:', err);
                 RequestService.reAjaxFun(() => {
                     this.getAgentBindDevices(agentId, callback);
                 });
             }).send();
     },
-    // 解绑设备
+    // デバイスのバインドを解除
     unbindDevice(device_id, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/device/unbind`)
@@ -29,13 +29,13 @@ export default {
                 callback(res);
             })
             .networkFail((err) => {
-                console.error('解绑设备失败:', err);
+                console.error('デバイスのバインド解除に失敗しました:', err);
                 RequestService.reAjaxFun(() => {
                     this.unbindDevice(device_id, callback);
                 });
             }).send();
     },
-    // 绑定设备
+    // デバイスをバインド
     bindDevice(agentId, deviceCode, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/device/bind/${agentId}/${deviceCode}`)
@@ -45,7 +45,7 @@ export default {
                 callback(res);
             })
             .networkFail((err) => {
-                console.error('绑定设备失败:', err);
+                console.error('デバイスのバインドに失敗しました:', err);
                 RequestService.reAjaxFun(() => {
                     this.bindDevice(agentId, deviceCode, callback);
                 });
@@ -61,14 +61,14 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('更新OTA状态失败:', err)
-                this.$message.error(err.msg || '更新OTA状态失败')
+                console.error('OTAステータスの更新に失敗しました:', err)
+                this.$message.error(err.msg || 'OTAステータスの更新に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.updateDeviceInfo(id, payload, callback)
                 })
             }).send()
     },
-    // 手动添加设备
+    // デバイスを手動で追加
     manualAddDevice(params, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/device/manual-add`)
@@ -79,7 +79,7 @@ export default {
                 callback(res);
             })
             .networkFail((err) => {
-                console.error('手动添加设备失败:', err);
+                console.error('手動でのデバイス追加に失敗しました:', err);
                 RequestService.reAjaxFun(() => {
                     this.manualAddDevice(params, callback);
                 });

@@ -15,7 +15,7 @@ class DeviceNotFoundException(Exception):
 class DeviceBindException(Exception):
     def __init__(self, bind_code):
         self.bind_code = bind_code
-        super().__init__(f"设备绑定异常，绑定码: {bind_code}")
+        super().__init__(f"デバイスのバインドに失敗しました。バインドコード: {bind_code}")
 
 
 class ManageApiClient:
@@ -24,7 +24,7 @@ class ManageApiClient:
     _secret = None
 
     def __new__(cls, config):
-        """单例模式确保全局唯一实例，并支持传入配置参数"""
+        """シングルトンパターンでグローバルな単一インスタンスを保証し、設定パラメータの受け渡しをサポートします"""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._init_client(config)
@@ -32,23 +32,23 @@ class ManageApiClient:
 
     @classmethod
     def _init_client(cls, config):
-        """初始化持久化连接池"""
+        """永続的な接続プールを初期化します"""
         cls.config = config.get("manager-api")
 
         if not cls.config:
-            raise Exception("manager-api配置错误")
+            raise Exception("manager-apiの設定に誤りがあります")
 
         if not cls.config.get("url") or not cls.config.get("secret"):
-            raise Exception("manager-api的url或secret配置错误")
+            raise Exception("manager-apiのURLまたはsecretの設定に誤りがあります")
 
         if "你" in cls.config.get("secret"):
-            raise Exception("请先配置manager-api的secret")
+            raise Exception("まずmanager-apiのsecretを設定してください")
 
         cls._secret = cls.config.get("secret")
-        cls.max_retries = cls.config.get("max_retries", 6)  # 最大重试次数
-        cls.retry_delay = cls.config.get("retry_delay", 10)  # 初始重试延迟(秒)
-        # NOTE(goody): 2025/4/16 http相关资源统一管理，后续可以增加线程池或者超时
-        # 后续也可以统一配置apiToken之类的走通用的Auth
+        cls.max_retries = cls.config.get("max_retries", 6)  # 最大リトライ回数
+        cls.retry_delay = cls.config.get("retry_delay", 10)  # 初期リトライ遅延（秒）
+        # NOTE(goody): 2025/4/16 http関連リソースを統一管理し、将来的にはスレッドプールやタイムアウトを追加できます
+        # 将来的にはapiTokenなどを統一的に設定し、共通の認証を利用することも可能です
         cls._client = httpx.Client(
             base_url=cls.config.get("url"),
             headers={
@@ -56,39 +56,39 @@ class ManageApiClient:
                 "Accept": "application/json",
                 "Authorization": "Bearer " + cls._secret,
             },
-            timeout=cls.config.get("timeout", 30),  # 默认超时时间30秒
+            timeout=cls.config.get("timeout", 30),  # デフォルトのタイムアウト時間は30秒
         )
 
     @classmethod
     def _request(cls, method: str, endpoint: str, **kwargs) -> Dict:
-        """发送单次HTTP请求并处理响应"""
+        """単一のHTTPリクエストを送信し、レスポンスを処理します"""
         endpoint = endpoint.lstrip("/")
         response = cls._client.request(method, endpoint, **kwargs)
         response.raise_for_status()
 
         result = response.json()
 
-        # 处理API返回的业务错误
+        # APIから返された業務エラーを処理します
         if result.get("code") == 10041:
             raise DeviceNotFoundException(result.get("msg"))
         elif result.get("code") == 10042:
             raise DeviceBindException(result.get("msg"))
         elif result.get("code") != 0:
-            raise Exception(f"API返回错误: {result.get('msg', '未知错误')}")
+            raise Exception(f"APIエラー: {result.get('msg', '不明なエラー')}")
 
-        # 返回成功数据
+        # 成功データを返します
         return result.get("data") if result.get("code") == 0 else None
 
     @classmethod
     def _should_retry(cls, exception: Exception) -> bool:
-        """判断异常是否应该重试"""
-        # 网络连接相关错误
+        """例外をリトライすべきか判断します"""
+        # ネットワーク接続関連のエラー
         if isinstance(
             exception, (httpx.ConnectError, httpx.TimeoutException, httpx.NetworkError)
         ):
             return True
 
-        # HTTP状态码错误
+        # HTTPステータスコードエラー
         if isinstance(exception, httpx.HTTPStatusError):
             status_code = exception.response.status_code
             return status_code in [408, 429, 500, 502, 503, 504]
@@ -97,43 +97,43 @@ class ManageApiClient:
 
     @classmethod
     def _execute_request(cls, method: str, endpoint: str, **kwargs) -> Dict:
-        """带重试机制的请求执行器"""
+        """リトライ機構付きのリクエスト実行プログラム"""
         retry_count = 0
 
         while retry_count <= cls.max_retries:
             try:
-                # 执行请求
+                # リクエストを実行
                 return cls._request(method, endpoint, **kwargs)
             except Exception as e:
-                # 判断是否应该重试
+                # リトライすべきか判断
                 if retry_count < cls.max_retries and cls._should_retry(e):
                     retry_count += 1
                     print(
-                        f"{method} {endpoint} 请求失败，将在 {cls.retry_delay:.1f} 秒后进行第 {retry_count} 次重试"
+                        f"{method} {endpoint} のリクエストに失敗しました。{cls.retry_delay:.1f} 秒後に {retry_count} 回目のリトライを実行します"
                     )
                     time.sleep(cls.retry_delay)
                     continue
                 else:
-                    # 不重试，直接抛出异常
+                    # リトライせず、直接例外をスローします
                     raise
 
     @classmethod
     def safe_close(cls):
-        """安全关闭连接池"""
+        """接続プールを安全にクローズします"""
         if cls._client:
             cls._client.close()
             cls._instance = None
 
 
 def get_server_config() -> Optional[Dict]:
-    """获取服务器基础配置"""
+    """サーバーの基本設定を取得します"""
     return ManageApiClient._instance._execute_request("POST", "/config/server-base")
 
 
 def get_agent_models(
     mac_address: str, client_id: str, selected_module: Dict
 ) -> Optional[Dict]:
-    """获取代理模型配置"""
+    """エージェントモデルの設定を取得します"""
     return ManageApiClient._instance._execute_request(
         "POST",
         "/config/agent-models",
@@ -155,14 +155,14 @@ def save_mem_local_short(mac_address: str, short_momery: str) -> Optional[Dict]:
             },
         )
     except Exception as e:
-        print(f"存储短期记忆到服务器失败: {e}")
+        print(f"短期記憶のサーバーへの保存に失敗しました: {e}")
         return None
 
 
 def report(
     mac_address: str, session_id: str, chat_type: int, content: str, audio, report_time
 ) -> Optional[Dict]:
-    """带熔断的业务方法示例"""
+    """サーキットブレーカー付きの業務メソッドの例"""
     if not content or not ManageApiClient._instance:
         return None
     try:
@@ -181,7 +181,7 @@ def report(
             },
         )
     except Exception as e:
-        print(f"TTS上报失败: {e}")
+        print(f"TTSのレポートに失敗しました: {e}")
         return None
 
 

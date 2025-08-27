@@ -3,7 +3,7 @@ import RequestService from '../httpRequest';
 
 
 export default {
-    // 获取智能体列表
+    // エージェントリストを取得
     getAgentList(callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent/list`)
@@ -18,7 +18,7 @@ export default {
                 });
             }).send();
     },
-    // 添加智能体
+    // エージェントを追加
     addAgent(agentName, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent`)
@@ -34,7 +34,7 @@ export default {
                 });
             }).send();
     },
-    // 删除智能体
+    // エージェントを削除
     deleteAgent(agentId, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent/${agentId}`)
@@ -49,7 +49,7 @@ export default {
                 });
             }).send();
     },
-    // 获取智能体配置
+    // エージェント設定を取得
     getDeviceConfig(agentId, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent/${agentId}`)
@@ -59,13 +59,13 @@ export default {
                 callback(res);
             })
             .networkFail((err) => {
-                console.error('获取配置失败:', err);
+                console.error('設定の取得に失敗しました:', err);
                 RequestService.reAjaxFun(() => {
                     this.getDeviceConfig(agentId, callback);
                 });
             }).send();
     },
-    // 配置智能体
+    // エージェントを設定
     updateAgentConfig(agentId, configData, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent/${agentId}`)
@@ -81,7 +81,7 @@ export default {
                 });
             }).send();
     },
-    // 新增方法：获取智能体模板
+    // 新規メソッド：エージェントテンプレートを取得
     getAgentTemplate(callback) {  // 移除templateName参数
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent/template`)
@@ -91,13 +91,13 @@ export default {
                 callback(res);
             })
             .networkFail((err) => {
-                console.error('获取模板失败:', err);
+                console.error('テンプレートの取得に失敗しました:', err);
                 RequestService.reAjaxFun(() => {
                     this.getAgentTemplate(callback);
                 });
             }).send();
     },
-    // 获取智能体会话列表
+    // エージェントセッションリストを取得
     getAgentSessions(agentId, params, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent/${agentId}/sessions`)
@@ -113,7 +113,7 @@ export default {
                 });
             }).send();
     },
-    // 获取智能体聊天记录
+    // エージェントチャット履歴を取得
     getAgentChatHistory(agentId, sessionId, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent/${agentId}/chat-history/${sessionId}`)
@@ -128,7 +128,7 @@ export default {
                 });
             }).send();
     },
-    // 获取音频下载ID
+    // オーディオダウンロードIDを取得
     getAudioId(audioId, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent/audio/${audioId}`)
@@ -143,7 +143,7 @@ export default {
                 });
             }).send();
     },
-    // 获取智能体的MCP接入点地址
+    // エージェントのMCPアクセスポイントアドレスを取得
     getAgentMcpAccessAddress(agentId, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent/mcp/address/${agentId}`)
@@ -158,7 +158,7 @@ export default {
                 });
             }).send();
     },
-    // 获取智能体的MCP工具列表
+    // エージェントのMCPツールリストを取得
     getAgentMcpToolsList(agentId, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/agent/mcp/tools/${agentId}`)

@@ -2,7 +2,7 @@ import { getServiceUrl } from '../api';
 import RequestService from '../httpRequest';
 
 export default {
-  // 获取模型配置列表
+  // モデル設定リストを取得
   getModelList(params, callback) {
     const queryParams = new URLSearchParams({
       modelType: params.modelType,
@@ -25,7 +25,7 @@ export default {
         })
       }).send()
   },
-  // 获取模型供应器列表
+  // モデルプロバイダーリストを取得
   getModelProviders(modelType, callback) {
     RequestService.sendRequest()
       .url(`${getServiceUrl()}/models/${modelType}/provideTypes`)
@@ -43,7 +43,7 @@ export default {
       }).send()
   },
 
-  // 新增模型配置
+  // モデル設定を新規追加
   addModel(params, callback) {
     const { modelType, provideCode, formData } = params;
     const postData = {
@@ -73,7 +73,7 @@ export default {
         })
       }).send()
   },
-  // 删除模型配置
+  // モデル設定を削除
   deleteModel(id, callback) {
     RequestService.sendRequest()
       .url(`${getServiceUrl()}/models/${id}`)
@@ -90,7 +90,7 @@ export default {
         })
       }).send()
   },
-  // 获取模型名称列表
+  // モデル名リストを取得
   getModelNames(modelType, modelName, callback) {
     RequestService.sendRequest()
       .url(`${getServiceUrl()}/models/names`)
@@ -106,7 +106,7 @@ export default {
         });
       }).send();
   },
-  // 获取模型音色列表
+  // モデルの音声リストを取得
   getModelVoices(modelId, voiceName, callback) {
     const queryParams = new URLSearchParams({
       voiceName: voiceName || ''
@@ -124,7 +124,7 @@ export default {
         });
       }).send();
   },
-  // 获取单个模型配置
+  // 個別のモデル設定を取得
   getModelConfig(id, callback) {
     RequestService.sendRequest()
       .url(`${getServiceUrl()}/models/${id}`)

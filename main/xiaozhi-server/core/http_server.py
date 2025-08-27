@@ -15,14 +15,14 @@ class SimpleHttpServer:
         self.vision_handler = VisionHandler(config)
 
     def _get_websocket_url(self, local_ip: str, port: int) -> str:
-        """获取websocket地址
+        """websocketアドレスを取得します
 
         Args:
-            local_ip: 本地IP地址
-            port: 端口号
+            local_ip: ローカルIPアドレス
+            port: ポート番号
 
         Returns:
-            str: websocket地址
+            str: websocketアドレス
         """
         server_config = self.config["server"]
         websocket_config = server_config.get("websocket")
@@ -43,7 +43,8 @@ class SimpleHttpServer:
             read_config_from_api = server_config.get("read_config_from_api", False)
 
             if not read_config_from_api:
-                # 如果没有开启智控台，只是单模块运行，就需要再添加简单OTA接口，用于下发websocket接口
+                # スマートコントロールパネルを有効にせず、単一モジュールで実行する場合、
+                # websocketインターフェースを配信するために簡単なOTAインターフェースを追加する必要があります
                 app.add_routes(
                     [
                         web.get("/xiaozhi/ota/", self.ota_handler.handle_get),
@@ -51,7 +52,7 @@ class SimpleHttpServer:
                         web.options("/xiaozhi/ota/", self.ota_handler.handle_post),
                     ]
                 )
-            # 添加路由
+            # ルートを追加
             app.add_routes(
                 [
                     web.get("/mcp/vision/explain", self.vision_handler.handle_get),
@@ -60,12 +61,12 @@ class SimpleHttpServer:
                 ]
             )
 
-            # 运行服务
+            # サービスを実行
             runner = web.AppRunner(app)
             await runner.setup()
             site = web.TCPSite(runner, host, port)
             await site.start()
 
-            # 保持服务运行
+            # サービスを実行し続ける
             while True:
-                await asyncio.sleep(3600)  # 每隔 1 小时检查一次
+                await asyncio.sleep(3600)  # 1時間ごとにチェック

@@ -11,23 +11,23 @@ def check_config_file():
     if config_file_valid:
         return
     """
-    简化的配置检查，仅提示用户配置文件的使用情况
+    簡素化された設定チェック。ユーザーに設定ファイルの使用状況を通知するだけです。
     """
     custom_config_file = get_project_dir() + "data/." + default_config_file
     if not os.path.exists(custom_config_file):
         raise FileNotFoundError(
-            "找不到data/.config.yaml文件，请按教程确认该配置文件是否存在"
+            "data/.config.yamlファイルが見つかりません。チュートリアルに従って設定ファイルが存在することを確認してください"
         )
 
-    # 检查是否从API读取配置
+    # APIから設定を読み込むかどうかを確認
     config = load_config()
     if config.get("read_config_from_api", False):
-        print("从API读取配置")
+        print("APIから設定を読み込みます")
         old_config_origin = read_config(custom_config_file)
         if old_config_origin.get("selected_module") is not None:
-            error_msg = "您的配置文件好像既包含智控台的配置又包含本地配置：\n"
-            error_msg += "\n建议您：\n"
-            error_msg += "1、将根目录的config_from_api.yaml文件复制到data下，重命名为.config.yaml\n"
-            error_msg += "2、按教程配置好接口地址和密钥\n"
+            error_msg = "設定ファイルに、スマートコントロールパネルの設定とローカル設定の両方が含まれているようです：\n"
+            error_msg += "\n次のことをお勧めします：\n"
+            error_msg += "1. ルートディレクトリのconfig_from_api.yamlファイルをdataにコピーし、.config.yamlにリネームしてください\n"
+            error_msg += "2. チュートリアルに従ってインターフェースアドレスとキーを設定してください\n"
             raise ValueError(error_msg)
     config_file_valid = True

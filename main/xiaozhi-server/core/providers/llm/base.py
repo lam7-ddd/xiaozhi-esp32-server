@@ -7,12 +7,12 @@ logger = setup_logging()
 class LLMProviderBase(ABC):
     @abstractmethod
     def response(self, session_id, dialogue):
-        """LLM response generator"""
+        """LLM応答ジェネレーター"""
         pass
 
     def response_no_stream(self, system_prompt, user_prompt, **kwargs):
         try:
-            # 构造对话格式
+            # 対話形式を構築
             dialogue = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
@@ -23,17 +23,16 @@ class LLMProviderBase(ABC):
             return result
 
         except Exception as e:
-            logger.bind(tag=TAG).error(f"Error in Ollama response generation: {e}")
-            return "【LLM服务响应异常】"
+            logger.bind(tag=TAG).error(f"Ollama応答生成エラー: {e}")
+            return "【LLMサービス応答例外】"
     
     def response_with_functions(self, session_id, dialogue, functions=None):
         """
-        Default implementation for function calling (streaming)
-        This should be overridden by providers that support function calls
+        関数呼び出しのデフォルト実装（ストリーミング）
+        これは、関数呼び出しをサポートするプロバイダーによってオーバーライドされる必要があります
 
-        Returns: generator that yields either text tokens or a special function call token
+        戻り値：テキストトークンまたは特別な関数呼び出しトークンを生成するジェネレーター
         """
-        # For providers that don't support functions, just return regular response
+        # 関数をサポートしないプロバイダーの場合は、通常の応答を返すだけです
         for token in self.response(session_id, dialogue):
             yield token, None
-

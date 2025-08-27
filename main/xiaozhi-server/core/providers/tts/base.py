@@ -52,7 +52,7 @@ class TTSProviderBase(ABC):
             "：",
         )
         self.first_sentence_punctuations = (
-            "，",
+            "、",
             "～",
             "~",
             "、",
@@ -80,7 +80,7 @@ class TTSProviderBase(ABC):
         text = MarkdownCleaner.clean_markdown(text)
         max_repeat_time = 5
         if self.delete_audio_file:
-            # 需要删除文件的直接转为音频数据
+            # ファイルを直接オーディオデータに変換する必要がある
             while max_repeat_time > 0:
                 try:
                     audio_bytes = asyncio.run(self.text_to_speak(text, None))
@@ -93,16 +93,16 @@ class TTSProviderBase(ABC):
                         max_repeat_time -= 1
                 except Exception as e:
                     logger.bind(tag=TAG).warning(
-                        f"语音生成失败{5 - max_repeat_time + 1}次: {text}，错误: {e}"
+                        f"音声生成に失敗しました{5 - max_repeat_time + 1}回目: {text}、エラー: {e}"
                     )
                     max_repeat_time -= 1
             if max_repeat_time > 0:
                 logger.bind(tag=TAG).info(
-                    f"语音生成成功: {text}，重试{5 - max_repeat_time}次"
+                    f"音声生成に成功しました: {text}、リトライ{5 - max_repeat_time}回"
                 )
             else:
                 logger.bind(tag=TAG).error(
-                    f"语音生成失败: {text}，请检查网络或服务是否正常"
+                    f"音声生成に失敗しました: {text}、ネットワークまたはサービスが正常かどうかを確認してください"
                 )
             return None
         else:
@@ -113,25 +113,25 @@ class TTSProviderBase(ABC):
                         asyncio.run(self.text_to_speak(text, tmp_file))
                     except Exception as e:
                         logger.bind(tag=TAG).warning(
-                            f"语音生成失败{5 - max_repeat_time + 1}次: {text}，错误: {e}"
+                            f"音声生成に失敗しました{5 - max_repeat_time + 1}回目: {text}、エラー: {e}"
                         )
-                        # 未执行成功，删除文件
+                        # 実行に成功しなかった場合、ファイルを削除
                         if os.path.exists(tmp_file):
                             os.remove(tmp_file)
                         max_repeat_time -= 1
 
                 if max_repeat_time > 0:
                     logger.bind(tag=TAG).info(
-                        f"语音生成成功: {text}:{tmp_file}，重试{5 - max_repeat_time}次"
+                        f"音声生成に成功しました: {text}:{tmp_file}、リトライ{5 - max_repeat_time}回"
                     )
                 else:
                     logger.bind(tag=TAG).error(
-                        f"语音生成失败: {text}，请检查网络或服务是否正常"
+                        f"音声生成に失敗しました: {text}、ネットワークまたはサービスが正常かどうかを確認してください"
                     )
 
                 return tmp_file
             except Exception as e:
-                logger.bind(tag=TAG).error(f"Failed to generate TTS file: {e}")
+                logger.bind(tag=TAG).error(f"TTSファイルの生成に失敗しました: {e}")
                 return None
 
     @abstractmethod
@@ -139,11 +139,11 @@ class TTSProviderBase(ABC):
         pass
 
     def audio_to_pcm_data(self, audio_file_path):
-        """音频文件转换为PCM编码"""
+        """オーディオファイルをPCMエンコーディングに変換"""
         return audio_to_data(audio_file_path, is_opus=False)
 
     def audio_to_opus_data(self, audio_file_path):
-        """音频文件转换为Opus编码"""
+        """オーディオファイルをOpusエンコーディングに変換"""
         return audio_to_data(audio_file_path, is_opus=True)
 
     def tts_one_sentence(
@@ -154,7 +154,7 @@ class TTSProviderBase(ABC):
         content_file=None,
         sentence_id=None,
     ):
-        """发送一句话"""
+        """一文を送信"""
         if not sentence_id:
             if conn.sentence_id:
                 sentence_id = conn.sentence_id
@@ -168,8 +168,8 @@ class TTSProviderBase(ABC):
                 content_type=ContentType.ACTION,
             )
         )
-        # 对于单句的文本，进行分段处理
-        segments = re.split(r"([。！？!?；;\n])", content_detail)
+        # 単一文のテキストの場合、セグメント化して処理
+        segments = re.split(r"([。！？!?；;\\n])", content_detail)
         for seg in segments:
             self.tts_text_queue.put(
                 TTSMessageDTO(
@@ -191,29 +191,29 @@ class TTSProviderBase(ABC):
     async def open_audio_channels(self, conn):
         self.conn = conn
         self.tts_timeout = conn.config.get("tts_timeout", 10)
-        # tts 消化线程
+        # tts消化スレッド
         self.tts_priority_thread = threading.Thread(
             target=self.tts_text_priority_thread, daemon=True
         )
         self.tts_priority_thread.start()
 
-        # 音频播放 消化线程
+        # オーディオ再生消化スレッド
         self.audio_play_priority_thread = threading.Thread(
             target=self._audio_play_priority_thread, daemon=True
         )
         self.audio_play_priority_thread.start()
 
-    # 这里默认是非流式的处理方式
-    # 流式处理方式请在子类中重写
+    # ここではデフォルトで非ストリーミング方式で処理します
+    # ストリーミング方式で処理する場合は、サブクラスでオーバーライドしてください
     def tts_text_priority_thread(self):
         while not self.conn.stop_event.is_set():
             try:
                 message = self.tts_text_queue.get(timeout=1)
                 if self.conn.client_abort:
-                    logger.bind(tag=TAG).info("收到打断信息，终止TTS文本处理线程")
+                    logger.bind(tag=TAG).info("中断情報を受信しました。TTSテキスト処理スレッドを終了します")
                     continue
                 if message.sentence_type == SentenceType.FIRST:
-                    # 初始化参数
+                    # パラメータを初期化
                     self.tts_stop_request = False
                     self.processed_chars = 0
                     self.tts_text_buff = []
@@ -255,7 +255,7 @@ class TTSProviderBase(ABC):
                 continue
             except Exception as e:
                 logger.bind(tag=TAG).error(
-                    f"处理TTS文本失败: {str(e)}, 类型: {type(e).__name__}, 堆栈: {traceback.format_exc()}"
+                    f"TTSテキストの処理に失敗しました: {str(e)}, タイプ: {type(e).__name__}, スタックトレース: {traceback.format_exc()}"
                 )
                 continue
 
@@ -291,17 +291,17 @@ class TTSProviderBase(ABC):
         pass
 
     async def close(self):
-        """资源清理方法"""
+        """リソースクリーンアップメソッド"""
         if hasattr(self, "ws") and self.ws:
             await self.ws.close()
 
     def _get_segment_text(self):
-        # 合并当前全部文本并处理未分割部分
+        # 現在のすべてのテキストを結合し、未分割部分を処理
         full_text = "".join(self.tts_text_buff)
-        current_text = full_text[self.processed_chars :]  # 从未处理的位置开始
+        current_text = full_text[self.processed_chars :]  # 未処理の位置から開始
         last_punct_pos = -1
 
-        # 根据是否是第一句话选择不同的标点符号集合
+        # 最初の文かどうかに応じて異なる句読点のセットを選択
         punctuations_to_use = (
             self.first_sentence_punctuations
             if self.is_first_sentence
@@ -320,26 +320,26 @@ class TTSProviderBase(ABC):
             segment_text = textUtils.get_string_no_punctuation_or_emoji(
                 segment_text_raw
             )
-            self.processed_chars += len(segment_text_raw)  # 更新已处理字符位置
+            self.processed_chars += len(segment_text_raw)  # 処理済み文字位置を更新
 
-            # 如果是第一句话，在找到第一个逗号后，将标志设置为False
+            # 最初の文の場合、最初のコンマを見つけたらフラグをFalseに設定
             if self.is_first_sentence:
                 self.is_first_sentence = False
 
             return segment_text
         elif self.tts_stop_request and current_text:
             segment_text = current_text
-            self.is_first_sentence = True  # 重置标志
+            self.is_first_sentence = True  # フラグをリセット
             return segment_text
         else:
             return None
 
     def _process_audio_file(self, tts_file):
-        """处理音频文件并转换为指定格式
+        """オーディオファイルを処理し、指定された形式に変換
 
         Args:
-            tts_file: 音频文件路径
-            content_detail: 内容详情
+            tts_file: オーディオファイルのパス
+            content_detail: コンテンツの詳細
 
         Returns:
             tuple: (sentence_type, audio_datas, content_detail)
@@ -370,10 +370,10 @@ class TTSProviderBase(ABC):
         self.tts_audio_queue.put((SentenceType.LAST, [], None))
 
     def _process_remaining_text(self):
-        """处理剩余的文本并生成语音
+        """残りのテキストを処理して音声を生成
 
         Returns:
-            bool: 是否成功处理了文本
+            bool: テキストが正常に処理されたかどうか
         """
         full_text = "".join(self.tts_text_buff)
         remaining_text = full_text[self.processed_chars :]

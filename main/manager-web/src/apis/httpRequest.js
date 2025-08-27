@@ -4,11 +4,11 @@ import Constant from '../utils/constant';
 import { goToPage, isNotNull, showDanger, showWarning } from '../utils/index';
 
 const fly = new Fly()
-// 设置超时
+// タイムアウトを設定
 fly.config.timeout = 30000
 
 /**
- * Request服务封装
+ * Requestサービスのカプセル化
  */
 export default {
     sendRequest,
@@ -25,13 +25,13 @@ function sendRequest() {
         _data: {},
         _header: { 'content-type': 'application/json; charset=utf-8' },
         _url: '',
-        _responseType: undefined, // 新增响应类型字段
+        _responseType: undefined, // 新しい応答タイプフィールド
         'send'() {
             if (isNotNull(store.getters.getToken)) {
                 this._header.Authorization = 'Bearer ' + (JSON.parse(store.getters.getToken)).token
             }
 
-            // 打印请求信息
+            // リクエスト情報を出力
             fly.request(this._url, this._data, {
                 method: this._method,
                 headers: this._header,
@@ -46,7 +46,7 @@ function sendRequest() {
                     this._sucCallback(res)
                 }
             }).catch((res) => {
-                // 打印失败响应
+                // 失敗した応答を出力
                 console.log('catch', res)
                 httpHandlerError(res, this._failCallback, this._networkFailCallback)
             })
@@ -90,7 +90,7 @@ function sendRequest() {
         'async'(flag) {
             this.async = flag
         },
-        // 新增类型设置方法
+        // 新しいタイプ設定メソッド
         'type'(responseType) {
             this._responseType = responseType;
             return this;
@@ -99,14 +99,14 @@ function sendRequest() {
 }
 
 /**
- * Info 请求完成后返回信息
- * failCallback 回调函数
- * networkFailCallback 回调函数
+ * Info リクエスト完了後に情報を返します
+ * failCallback コールバック関数
+ * networkFailCallback コールバック関数
  */
-// 在错误处理函数中添加日志
+// エラー処理関数にログを追加
 function httpHandlerError(info, failCallback, networkFailCallback) {
 
-    /** 请求成功，退出该函数 可以根据项目需求来判断是否请求成功。这里判断的是status为200的时候是成功 */
+    /** リクエストが成功した場合、この関数を終了します。プロジェクトの要件に応じてリクエストが成功したかどうかを判断できます。ここでは、statusが200の場合に成功と判断します */
     let networkError = false
     if (info.status === 200) {
         if (info.data.code === 'success' || info.data.code === 0 || info.data.code === undefined) {
@@ -127,7 +127,7 @@ function httpHandlerError(info, failCallback, networkFailCallback) {
     if (networkFailCallback) {
         networkFailCallback(info)
     } else {
-        showDanger(`网络请求出现了错误【${info.status}】`)
+        showDanger(`ネットワークリクエストでエラーが発生しました【${info.status}】`)
     }
     return true
 }

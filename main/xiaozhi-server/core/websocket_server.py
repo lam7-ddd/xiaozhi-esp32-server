@@ -43,8 +43,8 @@ class WebSocketServer:
             await asyncio.Future()
 
     async def _handle_connection(self, websocket):
-        """处理新连接，每次创建独立的ConnectionHandler"""
-        # 创建ConnectionHandler时传入当前server实例
+        """新しい接続を処理し、毎回独立したConnectionHandlerを作成します"""
+        # ConnectionHandlerを作成する際に現在のサーバーインスタンスを渡します
         handler = ConnectionHandler(
             self.config,
             self._vad,
@@ -52,63 +52,63 @@ class WebSocketServer:
             self._llm,
             self._memory,
             self._intent,
-            self,  # 传入server实例
+            self,  # サーバーインスタンスを渡す
         )
         self.active_connections.add(handler)
         try:
             await handler.handle_connection(websocket)
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"处理连接时出错: {e}")
+            self.logger.bind(tag=TAG).error(f"接続処理中にエラーが発生しました: {e}")
         finally:
-            # 确保从活动连接集合中移除
+            # アクティブな接続セットから確実に削除します
             self.active_connections.discard(handler)
-            # 强制关闭连接（如果还没有关闭的话）
+            # 接続を強制的に閉じます（まだ閉じていない場合）
             try:
-                # 安全地检查WebSocket状态并关闭
+                # WebSocketの状態を安全にチェックして閉じます
                 if hasattr(websocket, "closed") and not websocket.closed:
                     await websocket.close()
                 elif hasattr(websocket, "state") and websocket.state.name != "CLOSED":
                     await websocket.close()
                 else:
-                    # 如果没有closed属性，直接尝试关闭
+                    # closed属性がない場合は、直接クローズを試みます
                     await websocket.close()
             except Exception as close_error:
                 self.logger.bind(tag=TAG).error(
-                    f"服务器端强制关闭连接时出错: {close_error}"
+                    f"サーバー側で接続を強制的に閉じる際にエラーが発生しました: {close_error}"
                 )
 
     async def _http_response(self, websocket, request_headers):
-        # 检查是否为 WebSocket 升级请求
+        # WebSocketアップグレードリクエストかどうかを確認します
         if request_headers.headers.get("connection", "").lower() == "upgrade":
-            # 如果是 WebSocket 请求，返回 None 允许握手继续
+            # WebSocketリクエストの場合は、Noneを返してハンドシェイクを続行させます
             return None
         else:
-            # 如果是普通 HTTP 请求，返回 "server is running"
+            # 通常のHTTPリクエストの場合は、「server is running」を返します
             return websocket.respond(200, "Server is running\n")
 
     async def update_config(self) -> bool:
-        """更新服务器配置并重新初始化组件
+        """サーバー設定を更新し、コンポーネントを再初期化します
 
         Returns:
-            bool: 更新是否成功
+            bool: 更新が成功したかどうか
         """
         try:
             async with self.config_lock:
-                # 重新获取配置
+                # 設定を再取得
                 new_config = get_config_from_api(self.config)
                 if new_config is None:
-                    self.logger.bind(tag=TAG).error("获取新配置失败")
+                    self.logger.bind(tag=TAG).error("新しい設定の取得に失敗しました")
                     return False
-                self.logger.bind(tag=TAG).info(f"获取新配置成功")
-                # 检查 VAD 和 ASR 类型是否需要更新
+                self.logger.bind(tag=TAG).info("新しい設定の取得に成功しました")
+                # VADとASRのタイプを更新する必要があるか確認します
                 update_vad = check_vad_update(self.config, new_config)
                 update_asr = check_asr_update(self.config, new_config)
                 self.logger.bind(tag=TAG).info(
-                    f"检查VAD和ASR类型是否需要更新: {update_vad} {update_asr}"
+                    f"VADとASRのタイプを更新する必要があるか確認: {update_vad} {update_asr}"
                 )
-                # 更新配置
+                # 設定を更新
                 self.config = new_config
-                # 重新初始化组件
+                # コンポーネントを再初期化
                 modules = initialize_modules(
                     self.logger,
                     new_config,
@@ -120,7 +120,7 @@ class WebSocketServer:
                     "Intent" in new_config["selected_module"],
                 )
 
-                # 更新组件实例
+                # コンポーネントインスタンスを更新
                 if "vad" in modules:
                     self._vad = modules["vad"]
                 if "asr" in modules:
@@ -131,8 +131,8 @@ class WebSocketServer:
                     self._intent = modules["intent"]
                 if "memory" in modules:
                     self._memory = modules["memory"]
-                self.logger.bind(tag=TAG).info(f"更新配置任务执行完毕")
+                self.logger.bind(tag=TAG).info("設定の更新タスクが完了しました")
                 return True
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"更新服务器配置失败: {str(e)}")
+            self.logger.bind(tag=TAG).error(f"サーバー設定の更新に失敗しました: {str(e)}")
             return False

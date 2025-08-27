@@ -62,7 +62,7 @@ class ConnectionHandler:
         self.config = copy.deepcopy(config)
         self.session_id = str(uuid.uuid4())
         self.logger = setup_logging()
-        self.server = server  # 保存server实例的引用
+        self.server = server  # サーバーインスタンスへの参照を保存
 
         self.auth = AuthMiddleware(config)
         self.need_bind = False
@@ -80,24 +80,24 @@ class ConnectionHandler:
         self.chat_history_conf = 0
         self.audio_format = "opus"
 
-        # 客户端状态相关
+        # クライアントの状態関連
         self.client_abort = False
         self.client_is_speaking = False
         self.client_listen_mode = "auto"
 
-        # 线程任务相关
+        # スレッドタスク関連
         self.loop = asyncio.get_event_loop()
         self.stop_event = threading.Event()
         self.executor = ThreadPoolExecutor(max_workers=5)
 
-        # 添加上报线程池
+        # レポート用スレッドプールを追加
         self.report_queue = queue.Queue()
         self.report_thread = None
-        # 未来可以通过修改此处，调节asr的上报和tts的上报，目前默认都开启
+        # 将来的にはここを修正してASRとTTSのレポートを調整できますが、現在はデフォルトで両方有効です
         self.report_asr_enable = self.read_config_from_api
         self.report_tts_enable = self.read_config_from_api
 
-        # 依赖的组件
+        # 依存コンポーネント
         self.vad = None
         self.asr = None
         self.tts = None
@@ -107,26 +107,26 @@ class ConnectionHandler:
         self.memory = _memory
         self.intent = _intent
 
-        # vad相关变量
+        # VAD関連の変数
         self.client_audio_buffer = bytearray()
         self.client_have_voice = False
-        self.last_activity_time = 0.0  # 统一的活动时间戳（毫秒）
+        self.last_activity_time = 0.0  # 統一されたアクティビティタイムスタンプ（ミリ秒）
         self.client_voice_stop = False
 
-        # asr相关变量
-        # 因为实际部署时可能会用到公共的本地ASR，不能把变量暴露给公共ASR
-        # 所以涉及到ASR的变量，需要在这里定义，属于connection的私有变量
+        # ASR関連の変数
+        # 実際のデプロイでは共有のローカルASRが使用される可能性があるため、変数を共有ASRに公開することはできません
+        # そのため、ASR関連の変数はここで定義する必要があり、connectionのプライベート変数となります
         self.asr_audio = []
         self.asr_audio_queue = queue.Queue()
 
-        # llm相关变量
+        # LLM関連の変数
         self.llm_finish_task = True
         self.dialogue = Dialogue()
 
-        # tts相关变量
+        # TTS関連の変数
         self.sentence_id = None
 
-        # iot相关变量
+        # IoT関連の変数
         self.iot_descriptors = {}
         self.func_handler = None
 
@@ -136,32 +136,32 @@ class ConnectionHandler:
             if len(cmd) > self.max_cmd_length:
                 self.max_cmd_length = len(cmd)
 
-        # 是否在聊天结束后关闭连接
+        # チャット終了後に接続を閉じるかどうか
         self.close_after_chat = False
         self.load_function_plugin = False
         self.intent_type = "nointent"
 
         self.timeout_seconds = (
             int(self.config.get("close_connection_no_voice_time", 120)) + 60
-        )  # 在原来第一道关闭的基础上加60秒，进行二道关闭
+        )  # 元々の第一段階のクローズに60秒を追加して、第二段階のクローズを行います
         self.timeout_task = None
 
-        # {"mcp":true} 表示启用MCP功能
+        # {"mcp":true} はMCP機能を有効にすることを意味します
         self.features = None
 
     async def handle_connection(self, ws):
         try:
-            # 获取并验证headers
+            # ヘッダーを取得して検証
             self.headers = dict(ws.request.headers)
 
             if self.headers.get("device-id", None) is None:
-                # 尝试从 URL 的查询参数中获取 device-id
+                # URLのクエリパラメータからdevice-idの取得を試みる
                 from urllib.parse import parse_qs, urlparse
 
-                # 从 WebSocket 请求中获取路径
+                # WebSocketリクエストからパスを取得
                 request_path = ws.request.path
                 if not request_path:
-                    self.logger.bind(tag=TAG).error("无法获取请求路径")
+                    self.logger.bind(tag=TAG).error("リクエストパスを取得できません")
                     return
                 parsed_url = urlparse(request_path)
                 query_params = parse_qs(parsed_url.query)
@@ -169,98 +169,98 @@ class ConnectionHandler:
                     self.headers["device-id"] = query_params["device-id"][0]
                     self.headers["client-id"] = query_params["client-id"][0]
                 else:
-                    await ws.send("端口正常，如需测试连接，请使用test_page.html")
+                    await ws.send("ポートは正常です。接続をテストする必要がある場合は、test_page.htmlを使用してください")
                     await self.close(ws)
                     return
-            # 获取客户端ip地址
+            # クライアントのIPアドレスを取得
             self.client_ip = ws.remote_address[0]
             self.logger.bind(tag=TAG).info(
                 f"{self.client_ip} conn - Headers: {self.headers}"
             )
 
-            # 进行认证
+            # 認証を実行
             await self.auth.authenticate(self.headers)
 
-            # 认证通过,继续处理
+            # 認証成功、処理を続行
             self.websocket = ws
             self.device_id = self.headers.get("device-id", None)
 
-            # 初始化活动时间戳
+            # アクティビティタイムスタンプを初期化
             self.last_activity_time = time.time() * 1000
 
-            # 启动超时检查任务
+            # タイムアウトチェックタスクを開始
             self.timeout_task = asyncio.create_task(self._check_timeout())
 
             self.welcome_msg = self.config["xiaozhi"]
             self.welcome_msg["session_id"] = self.session_id
 
-            # 获取差异化配置
+            # 差分設定を取得
             self._initialize_private_config()
-            # 异步初始化
+            # 非同期初期化
             self.executor.submit(self._initialize_components)
 
             try:
                 async for message in self.websocket:
                     await self._route_message(message)
             except websockets.exceptions.ConnectionClosed:
-                self.logger.bind(tag=TAG).info("客户端断开连接")
+                self.logger.bind(tag=TAG).info("クライアントが切断しました")
 
         except AuthenticationError as e:
-            self.logger.bind(tag=TAG).error(f"Authentication failed: {str(e)}")
+            self.logger.bind(tag=TAG).error(f"認証に失敗しました: {str(e)}")
             return
         except Exception as e:
             stack_trace = traceback.format_exc()
-            self.logger.bind(tag=TAG).error(f"Connection error: {str(e)}-{stack_trace}")
+            self.logger.bind(tag=TAG).error(f"接続エラー: {str(e)}-{stack_trace}")
             return
         finally:
             try:
                 await self._save_and_close(ws)
             except Exception as final_error:
-                self.logger.bind(tag=TAG).error(f"最终清理时出错: {final_error}")
-                # 确保即使保存记忆失败，也要关闭连接
+                self.logger.bind(tag=TAG).error(f"最終クリーンアップ中にエラーが発生しました: {final_error}")
+                # メモリの保存に失敗した場合でも、必ず接続を閉じるようにします
                 try:
                     await self.close(ws)
                 except Exception as close_error:
                     self.logger.bind(tag=TAG).error(
-                        f"强制关闭连接时出错: {close_error}"
+                        f"接続を強制的に閉じる際にエラーが発生しました: {close_error}"
                     )
 
     async def _save_and_close(self, ws):
-        """保存记忆并关闭连接"""
+        """メモリを保存して接続を閉じます"""
         try:
             if self.memory:
-                # 使用线程池异步保存记忆
+                # スレッドプールを使用して非同期でメモリを保存
                 def save_memory_task():
                     try:
-                        # 创建新事件循环（避免与主循环冲突）
+                        # 新しいイベントループを作成（メインループとの競合を避けるため）
                         loop = asyncio.new_event_loop()
                         asyncio.set_event_loop(loop)
                         loop.run_until_complete(
                             self.memory.save_memory(self.dialogue.dialogue)
                         )
                     except Exception as e:
-                        self.logger.bind(tag=TAG).error(f"保存记忆失败: {e}")
+                        self.logger.bind(tag=TAG).error(f"メモリの保存に失敗しました: {e}")
                     finally:
                         try:
                             loop.close()
                         except Exception:
                             pass
 
-                # 启动线程保存记忆，不等待完成
+                # スレッドを開始してメモリを保存し、完了を待たない
                 threading.Thread(target=save_memory_task, daemon=True).start()
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"保存记忆失败: {e}")
+            self.logger.bind(tag=TAG).error(f"メモリの保存に失敗しました: {e}")
         finally:
-            # 立即关闭连接，不等待记忆保存完成
+            # メモリの保存完了を待たずにすぐに接続を閉じる
             try:
                 await self.close(ws)
             except Exception as close_error:
                 self.logger.bind(tag=TAG).error(
-                    f"保存记忆后关闭连接失败: {close_error}"
+                    f"メモリ保存後に接続を閉じるのに失敗しました: {close_error}"
                 )
 
     async def _route_message(self, message):
-        """消息路由"""
+        """メッセージルーティング"""
         if isinstance(message, str):
             self.last_activity_time = time.time() * 1000
             await handleTextMessage(self, message)
@@ -272,28 +272,28 @@ class ConnectionHandler:
             self.asr_audio_queue.put(message)
 
     async def handle_restart(self, message):
-        """处理服务器重启请求"""
+        """サーバー再起動リクエストを処理します"""
         try:
 
-            self.logger.bind(tag=TAG).info("收到服务器重启指令，准备执行...")
+            self.logger.bind(tag=TAG).info("サーバー再起動コマンドを受信しました。実行準備中...")
 
-            # 发送确认响应
+            # 確認応答を送信
             await self.websocket.send(
                 json.dumps(
                     {
                         "type": "server",
                         "status": "success",
-                        "message": "服务器重启中...",
+                        "message": "サーバー再起動中...",
                         "content": {"action": "restart"},
                     }
                 )
             )
 
-            # 异步执行重启操作
+            # 非同期で再起動操作を実行
             def restart_server():
-                """实际执行重启的方法"""
+                """実際に再起動を実行するメソッド"""
                 time.sleep(1)
-                self.logger.bind(tag=TAG).info("执行服务器重启...")
+                self.logger.bind(tag=TAG).info("サーバーを再起動しています...")
                 subprocess.Popen(
                     [sys.executable, "app.py"],
                     stdin=sys.stdin,
@@ -303,17 +303,17 @@ class ConnectionHandler:
                 )
                 os._exit(0)
 
-            # 使用线程执行重启避免阻塞事件循环
+            # スレッドを使用してイベントループをブロックせずに再起動を実行
             threading.Thread(target=restart_server, daemon=True).start()
 
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"重启失败: {str(e)}")
+            self.logger.bind(tag=TAG).error(f"再起動に失敗しました: {str(e)}")
             await self.websocket.send(
                 json.dumps(
                     {
                         "type": "server",
                         "status": "error",
-                        "message": f"Restart failed: {str(e)}",
+                        "message": f"再起動に失敗しました: {str(e)}",
                         "content": {"action": "restart"},
                     }
                 )
@@ -325,41 +325,41 @@ class ConnectionHandler:
                 self.config.get("selected_module", {})
             )
             update_module_string(self.selected_module_str)
-            """初始化组件"""
+            """コンポーネントを初期化します"""
             if self.config.get("prompt") is not None:
                 self.prompt = self.config["prompt"]
                 self.change_system_prompt(self.prompt)
                 self.logger.bind(tag=TAG).info(
-                    f"初始化组件: prompt成功 {self.prompt[:50]}..."
+                    f"コンポーネントの初期化: prompt成功 {self.prompt[:50]}..."
                 )
 
-            """初始化本地组件"""
+            """ローカルコンポーネントを初期化します"""
             if self.vad is None:
                 self.vad = self._vad
             if self.asr is None:
                 self.asr = self._initialize_asr()
-            # 打开语音识别通道
+            # 音声認識チャネルを開く
             asyncio.run_coroutine_threadsafe(
                 self.asr.open_audio_channels(self), self.loop
             )
             if self.tts is None:
                 self.tts = self._initialize_tts()
-            # 打开语音合成通道
+            # 音声合成チャネルを開く
             asyncio.run_coroutine_threadsafe(
                 self.tts.open_audio_channels(self), self.loop
             )
 
-            """加载记忆"""
+            """メモリをロード"""
             self._initialize_memory()
-            """加载意图识别"""
+            """意図認識をロード"""
             self._initialize_intent()
-            """初始化上报线程"""
+            """レポート用スレッドを初期化"""
             self._init_report_threads()
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"实例化组件失败: {e}")
+            self.logger.bind(tag=TAG).error(f"コンポーネントのインスタンス化に失敗しました: {e}")
 
     def _init_report_threads(self):
-        """初始化ASR和TTS上报线程"""
+        """ASRおよびTTSレポート用スレッドを初期化します"""
         if not self.read_config_from_api or self.need_bind:
             return
         if self.chat_history_conf == 0:
@@ -369,10 +369,10 @@ class ConnectionHandler:
                 target=self._report_worker, daemon=True
             )
             self.report_thread.start()
-            self.logger.bind(tag=TAG).info("TTS上报线程已启动")
+            self.logger.bind(tag=TAG).info("TTSレポート用スレッドが開始されました")
 
     def _initialize_tts(self):
-        """初始化TTS"""
+        """TTSを初期化します"""
         tts = None
         if not self.need_bind:
             tts = initialize_tts(self.config)
@@ -383,23 +383,23 @@ class ConnectionHandler:
         return tts
 
     def _initialize_asr(self):
-        """初始化ASR"""
+        """ASRを初期化します"""
         if self._asr.interface_type == InterfaceType.LOCAL:
-            # 如果公共ASR是本地服务，则直接返回
-            # 因为本地一个实例ASR，可以被多个连接共享
+            # 共有ASRがローカルサービスの場合は直接返す
+            # ローカルの1つのASRインスタンスは複数の接続で共有できるため
             asr = self._asr
         else:
-            # 如果公共ASR是远程服务，则初始化一个新实例
-            # 因为远程ASR，涉及到websocket连接和接收线程，需要每个连接一个实例
+            # 共有ASRがリモートサービスの場合は新しいインスタンスを初期化する
+            # リモートASRはwebsocket接続と受信スレッドに関わるため、接続ごとにインスタンスが必要
             asr = initialize_asr(self.config)
 
         return asr
 
     def _initialize_private_config(self):
-        """如果是从配置文件获取，则进行二次实例化"""
+        """設定ファイルから取得する場合は、二次的なインスタンス化を行います"""
         if not self.read_config_from_api:
             return
-        """从接口获取差异化的配置进行二次实例化，非全量重新实例化"""
+        """インターフェースから差分設定を取得して二次的なインスタンス化を行い、完全な再インスタンス化は行いません"""
         try:
             begin_time = time.time()
             private_config = get_private_config_from_api(
@@ -409,7 +409,7 @@ class ConnectionHandler:
             )
             private_config["delete_audio"] = bool(self.config.get("delete_audio", True))
             self.logger.bind(tag=TAG).info(
-                f"{time.time() - begin_time} 秒，获取差异化配置成功: {json.dumps(filter_sensitive_info(private_config), ensure_ascii=False)}"
+                f"{time.time() - begin_time} 秒、差分設定の取得に成功しました: {json.dumps(filter_sensitive_info(private_config), ensure_ascii=False)}"
             )
         except DeviceNotFoundException as e:
             self.need_bind = True
@@ -420,7 +420,7 @@ class ConnectionHandler:
             private_config = {}
         except Exception as e:
             self.need_bind = True
-            self.logger.bind(tag=TAG).error(f"获取差异化配置失败: {e}")
+            self.logger.bind(tag=TAG).error(f"差分設定の取得に失敗しました: {e}")
             private_config = {}
 
         init_llm, init_tts, init_memory, init_intent = (
@@ -466,7 +466,7 @@ class ConnectionHandler:
             self.config["Intent"] = private_config["Intent"]
             model_intent = private_config.get("selected_module", {}).get("Intent", {})
             self.config["selected_module"]["Intent"] = model_intent
-            # 加载插件配置
+            # プラグイン設定をロード
             if model_intent != "Intent_nointent":
                 plugin_from_server = private_config.get("plugins", {})
                 for plugin, config_str in plugin_from_server.items():
@@ -497,7 +497,7 @@ class ConnectionHandler:
                 init_intent,
             )
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"初始化组件失败: {e}")
+            self.logger.bind(tag=TAG).error(f"コンポーネントの初期化に失敗しました: {e}")
             modules = {}
         if modules.get("tts", None) is not None:
             self.tts = modules["tts"]
@@ -515,7 +515,7 @@ class ConnectionHandler:
     def _initialize_memory(self):
         if self.memory is None:
             return
-        """初始化记忆模块"""
+        """メモリモジュールを初期化します"""
         self.memory.init_memory(
             role_id=self.device_id,
             llm=self.llm,
@@ -523,21 +523,21 @@ class ConnectionHandler:
             save_to_file=not self.read_config_from_api,
         )
 
-        # 获取记忆总结配置
+        # メモリ要約設定を取得
         memory_config = self.config["Memory"]
         memory_type = self.config["Memory"][self.config["selected_module"]["Memory"]][
             "type"
         ]
-        # 如果使用 nomen，直接返回
+        # nomemを使用する場合は直接返す
         if memory_type == "nomem":
             return
-        # 使用 mem_local_short 模式
+        # mem_local_shortモードを使用
         elif memory_type == "mem_local_short":
             memory_llm_name = memory_config[self.config["selected_module"]["Memory"]][
                 "llm"
             ]
             if memory_llm_name and memory_llm_name in self.config["LLM"]:
-                # 如果配置了专用LLM，则创建独立的LLM实例
+                # 専用LLMが設定されている場合は、独立したLLMインスタンスを作成
                 from core.utils import llm as llm_utils
 
                 memory_llm_config = self.config["LLM"][memory_llm_name]
@@ -546,13 +546,13 @@ class ConnectionHandler:
                     memory_llm_type, memory_llm_config
                 )
                 self.logger.bind(tag=TAG).info(
-                    f"为记忆总结创建了专用LLM: {memory_llm_name}, 类型: {memory_llm_type}"
+                    f"メモリ要約用に専用LLMを作成しました: {memory_llm_name}, タイプ: {memory_llm_type}"
                 )
                 self.memory.set_llm(memory_llm)
             else:
-                # 否则使用主LLM
+                # それ以外の場合はメインLLMを使用
                 self.memory.set_llm(self.llm)
-                self.logger.bind(tag=TAG).info("使用主LLM作为意图识别模型")
+                self.logger.bind(tag=TAG).info("メインLLMを意図認識モデルとして使用します")
 
     def _initialize_intent(self):
         if self.intent is None:
@@ -562,24 +562,24 @@ class ConnectionHandler:
         ]["type"]
         if self.intent_type == "function_call" or self.intent_type == "intent_llm":
             self.load_function_plugin = True
-        """初始化意图识别模块"""
-        # 获取意图识别配置
+        """意図認識モジュールを初期化します"""
+        # 意図認識設定を取得
         intent_config = self.config["Intent"]
         intent_type = self.config["Intent"][self.config["selected_module"]["Intent"]][
             "type"
         ]
 
-        # 如果使用 nointent，直接返回
+        # nointentを使用する場合は直接返す
         if intent_type == "nointent":
             return
-        # 使用 intent_llm 模式
+        # intent_llmモードを使用
         elif intent_type == "intent_llm":
             intent_llm_name = intent_config[self.config["selected_module"]["Intent"]][
                 "llm"
             ]
 
             if intent_llm_name and intent_llm_name in self.config["LLM"]:
-                # 如果配置了专用LLM，则创建独立的LLM实例
+                # 専用LLMが設定されている場合は、独立したLLMインスタンスを作成
                 from core.utils import llm as llm_utils
 
                 intent_llm_config = self.config["LLM"][intent_llm_name]
@@ -588,41 +588,41 @@ class ConnectionHandler:
                     intent_llm_type, intent_llm_config
                 )
                 self.logger.bind(tag=TAG).info(
-                    f"为意图识别创建了专用LLM: {intent_llm_name}, 类型: {intent_llm_type}"
+                    f"意図認識用に専用LLMを作成しました: {intent_llm_name}, タイプ: {intent_llm_type}"
                 )
                 self.intent.set_llm(intent_llm)
             else:
-                # 否则使用主LLM
+                # それ以外の場合はメインLLMを使用
                 self.intent.set_llm(self.llm)
-                self.logger.bind(tag=TAG).info("使用主LLM作为意图识别模型")
+                self.logger.bind(tag=TAG).info("メインLLMを意図認識モデルとして使用します")
 
-        """加载统一工具处理器"""
+        """統一ツールハンドラをロード"""
         self.func_handler = UnifiedToolHandler(self)
 
-        # 异步初始化工具处理器
+        # ツールハンドラを非同期で初期化
         if hasattr(self, "loop") and self.loop:
             asyncio.run_coroutine_threadsafe(self.func_handler._initialize(), self.loop)
 
     def change_system_prompt(self, prompt):
         self.prompt = prompt
-        # 更新系统prompt至上下文
+        # システムプロンプトをコンテキストに更新
         self.dialogue.update_system_message(self.prompt)
 
     def chat(self, query, tool_call=False):
-        self.logger.bind(tag=TAG).info(f"大模型收到用户消息: {query}")
+        self.logger.bind(tag=TAG).info(f"大規模モデルがユーザーメッセージを受信しました: {query}")
         self.llm_finish_task = False
 
         if not tool_call:
             self.dialogue.put(Message(role="user", content=query))
 
-        # Define intent functions
+        # 意図関数を定義
         functions = None
         if self.intent_type == "function_call" and hasattr(self, "func_handler"):
             functions = self.func_handler.get_functions()
         response_message = []
 
         try:
-            # 使用带记忆的对话
+            # メモリ付きの対話を使用
             memory_str = None
             if self.memory is not None:
                 future = asyncio.run_coroutine_threadsafe(
@@ -633,7 +633,7 @@ class ConnectionHandler:
             self.sentence_id = str(uuid.uuid4().hex)
 
             if self.intent_type == "function_call" and functions is not None:
-                # 使用支持functions的streaming接口
+                # functionsをサポートするストリーミングインターフェースを使用
                 llm_responses = self.llm.response_with_functions(
                     self.session_id,
                     self.dialogue.get_llm_dialogue_with_memory(memory_str),
@@ -645,10 +645,10 @@ class ConnectionHandler:
                     self.dialogue.get_llm_dialogue_with_memory(memory_str),
                 )
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"LLM 处理出错 {query}: {e}")
+            self.logger.bind(tag=TAG).error(f"LLM処理中にエラーが発生しました {query}: {e}")
             return None
 
-        # 处理流式响应
+        # ストリーミング応答を処理
         tool_call_flag = False
         function_name = None
         function_id = None
@@ -701,7 +701,7 @@ class ConnectionHandler:
                         )
                     )
                     text_index += 1
-        # 处理function call
+        # function callを処理
         if tool_call_flag:
             bHasError = False
             if function_id is None:
@@ -722,7 +722,7 @@ class ConnectionHandler:
                     response_message.append(content_arguments)
                 if bHasError:
                     self.logger.bind(tag=TAG).error(
-                        f"function call error: {content_arguments}"
+                        f"function callエラー: {content_arguments}"
                     )
             if not bHasError:
                 response_message.clear()
@@ -735,7 +735,7 @@ class ConnectionHandler:
                     "arguments": function_arguments,
                 }
 
-                # 使用统一工具处理器处理所有工具调用
+                # 統一ツールハンドラを使用してすべてのツール呼び出しを処理
                 result = asyncio.run_coroutine_threadsafe(
                     self.func_handler.handle_llm_function_call(
                         self, function_call_data
@@ -744,7 +744,7 @@ class ConnectionHandler:
                 ).result()
                 self._handle_function_result(result, function_call_data)
 
-        # 存储对话内容
+        # 対話内容を保存
         if len(response_message) > 0:
             self.dialogue.put(
                 Message(role="assistant", content="".join(response_message))
@@ -765,11 +765,11 @@ class ConnectionHandler:
         return True
 
     def _handle_function_result(self, result, function_call_data):
-        if result.action == Action.RESPONSE:  # 直接回复前端
+        if result.action == Action.RESPONSE:  # フロントエンドに直接応答
             text = result.response
             self.tts.tts_one_sentence(self, ContentType.TEXT, content_detail=text)
             self.dialogue.put(Message(role="assistant", content=text))
-        elif result.action == Action.REQLLM:  # 调用函数后再请求llm生成回复
+        elif result.action == Action.REQLLM:  # 関数を呼び出した後、llmに再度リクエストして応答を生成
             text = result.result
             if text is not None and len(text) > 0:
                 function_id = function_call_data["id"]
@@ -810,50 +810,50 @@ class ConnectionHandler:
             pass
 
     def _report_worker(self):
-        """聊天记录上报工作线程"""
+        """チャット履歴レポートワーカースレッド"""
         while not self.stop_event.is_set():
             try:
-                # 从队列获取数据，设置超时以便定期检查停止事件
+                # キューからデータを取得し、定期的に停止イベントをチェックするためにタイムアウトを設定
                 item = self.report_queue.get(timeout=1)
-                if item is None:  # 检测毒丸对象
+                if item is None:  # ポイズンピルを検出
                     break
                 type, text, audio_data, report_time = item
                 try:
-                    # 检查线程池状态
+                    # スレッドプールの状態を確認
                     if self.executor is None:
                         continue
-                    # 提交任务到线程池
+                    # タスクをスレッドプールに送信
                     self.executor.submit(
                         self._process_report, type, text, audio_data, report_time
                     )
                 except Exception as e:
-                    self.logger.bind(tag=TAG).error(f"聊天记录上报线程异常: {e}")
+                    self.logger.bind(tag=TAG).error(f"チャット履歴レポートスレッドで例外が発生しました: {e}")
             except queue.Empty:
                 continue
             except Exception as e:
-                self.logger.bind(tag=TAG).error(f"聊天记录上报工作线程异常: {e}")
+                self.logger.bind(tag=TAG).error(f"チャット履歴レポートワーカースレッドで例外が発生しました: {e}")
 
-        self.logger.bind(tag=TAG).info("聊天记录上报线程已退出")
+        self.logger.bind(tag=TAG).info("チャット履歴レポートスレッドが終了しました")
 
     def _process_report(self, type, text, audio_data, report_time):
-        """处理上报任务"""
+        """レポートタスクを処理します"""
         try:
-            # 执行上报（传入二进制数据）
+            # レポートを実行（バイナリデータを渡す）
             report(self, type, text, audio_data, report_time)
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"上报处理异常: {e}")
+            self.logger.bind(tag=TAG).error(f"レポート処理で例外が発生しました: {e}")
         finally:
-            # 标记任务完成
+            # タスク完了をマーク
             self.report_queue.task_done()
 
     def clearSpeakStatus(self):
         self.client_is_speaking = False
-        self.logger.bind(tag=TAG).debug(f"清除服务端讲话状态")
+        self.logger.bind(tag=TAG).debug("サーバーサイドのスピーキング状態をクリアしました")
 
     async def close(self, ws=None):
-        """资源清理方法"""
+        """リソースクリーンアップメソッド"""
         try:
-            # 取消超时任务
+            # タイムアウトタスクをキャンセル
             if self.timeout_task and not self.timeout_task.done():
                 self.timeout_task.cancel()
                 try:
@@ -862,36 +862,36 @@ class ConnectionHandler:
                     pass
                 self.timeout_task = None
 
-            # 清理工具处理器资源
+            # ツールハンドラのリソースをクリーンアップ
             if hasattr(self, "func_handler") and self.func_handler:
                 try:
                     await self.func_handler.cleanup()
                 except Exception as cleanup_error:
                     self.logger.bind(tag=TAG).error(
-                        f"清理工具处理器时出错: {cleanup_error}"
+                        f"ツールハンドラのクリーンアップ中にエラーが発生しました: {cleanup_error}"
                     )
 
-            # 触发停止事件
+            # 停止イベントをトリガー
             if self.stop_event:
                 self.stop_event.set()
 
-            # 清空任务队列
+            # タスクキューをクリア
             self.clear_queues()
 
-            # 关闭WebSocket连接
+            # WebSocket接続を閉じる
             try:
                 if ws:
-                    # 安全地检查WebSocket状态并关闭
+                    # WebSocketの状態を安全にチェックして閉じる
                     try:
                         if hasattr(ws, "closed") and not ws.closed:
                             await ws.close()
                         elif hasattr(ws, "state") and ws.state.name != "CLOSED":
                             await ws.close()
                         else:
-                            # 如果没有closed属性，直接尝试关闭
+                            # closed属性がない場合は、直接クローズを試みる
                             await ws.close()
                     except Exception:
-                        # 如果关闭失败，忽略错误
+                        # クローズに失敗した場合はエラーを無視
                         pass
                 elif self.websocket:
                     try:
@@ -906,40 +906,40 @@ class ConnectionHandler:
                         ):
                             await self.websocket.close()
                         else:
-                            # 如果没有closed属性，直接尝试关闭
+                            # closed属性がない場合は、直接クローズを試みる
                             await self.websocket.close()
                     except Exception:
-                        # 如果关闭失败，忽略错误
+                        # クローズに失敗した場合はエラーを無視
                         pass
             except Exception as ws_error:
-                self.logger.bind(tag=TAG).error(f"关闭WebSocket连接时出错: {ws_error}")
+                self.logger.bind(tag=TAG).error(f"WebSocket接続を閉じる際にエラーが発生しました: {ws_error}")
 
-            # 最后关闭线程池（避免阻塞）
+            # 最後にスレッドプールを閉じる（ブロッキングを避けるため）
             if self.executor:
                 try:
                     self.executor.shutdown(wait=False)
                 except Exception as executor_error:
                     self.logger.bind(tag=TAG).error(
-                        f"关闭线程池时出错: {executor_error}"
+                        f"スレッドプールを閉じる際にエラーが発生しました: {executor_error}"
                     )
                 self.executor = None
 
-            self.logger.bind(tag=TAG).info("连接资源已释放")
+            self.logger.bind(tag=TAG).info("接続リソースが解放されました")
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"关闭连接时出错: {e}")
+            self.logger.bind(tag=TAG).error(f"接続を閉じる際にエラーが発生しました: {e}")
         finally:
-            # 确保停止事件被设置
+            # 停止イベントが設定されていることを確認
             if self.stop_event:
                 self.stop_event.set()
 
     def clear_queues(self):
-        """清空所有任务队列"""
+        """すべてのタスクキューをクリアします"""
         if self.tts:
             self.logger.bind(tag=TAG).debug(
-                f"开始清理: TTS队列大小={self.tts.tts_text_queue.qsize()}, 音频队列大小={self.tts.tts_audio_queue.qsize()}"
+                f"クリーンアップ開始: TTSキューサイズ={self.tts.tts_text_queue.qsize()}, オーディオキューサイズ={self.tts.tts_audio_queue.qsize()}"
             )
 
-            # 使用非阻塞方式清空队列
+            # 非ブロッキング方式でキューをクリア
             for q in [
                 self.tts.tts_text_queue,
                 self.tts.tts_audio_queue,
@@ -954,31 +954,31 @@ class ConnectionHandler:
                         break
 
             self.logger.bind(tag=TAG).debug(
-                f"清理结束: TTS队列大小={self.tts.tts_text_queue.qsize()}, 音频队列大小={self.tts.tts_audio_queue.qsize()}"
+                f"クリーンアップ終了: TTSキューサイズ={self.tts.tts_text_queue.qsize()}, オーディオキューサイズ={self.tts.tts_audio_queue.qsize()}"
             )
 
     def reset_vad_states(self):
         self.client_audio_buffer = bytearray()
         self.client_have_voice = False
         self.client_voice_stop = False
-        self.logger.bind(tag=TAG).debug("VAD states reset.")
+        self.logger.bind(tag=TAG).debug("VADの状態がリセットされました。")
 
     def chat_and_close(self, text):
-        """Chat with the user and then close the connection"""
+        """ユーザーとチャットしてから接続を閉じます"""
         try:
-            # Use the existing chat method
+            # 既存のチャットメソッドを使用
             self.chat(text)
 
-            # After chat is complete, close the connection
+            # チャット完了後、接続を閉じる
             self.close_after_chat = True
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"Chat and close error: {str(e)}")
+            self.logger.bind(tag=TAG).error(f"チャットアンドクローズエラー: {str(e)}")
 
     async def _check_timeout(self):
-        """检查连接超时"""
+        """接続タイムアウトを確認します"""
         try:
             while not self.stop_event.is_set():
-                # 检查是否超时（只有在时间戳已初始化的情况下）
+                # タイムアウトを確認（タイムスタンプが初期化されている場合のみ）
                 if self.last_activity_time > 0.0:
                     current_time = time.time() * 1000
                     if (
@@ -986,20 +986,20 @@ class ConnectionHandler:
                         > self.timeout_seconds * 1000
                     ):
                         if not self.stop_event.is_set():
-                            self.logger.bind(tag=TAG).info("连接超时，准备关闭")
-                            # 设置停止事件，防止重复处理
+                            self.logger.bind(tag=TAG).info("接続がタイムアウトしました。クローズ準備中")
+                            # 重複処理を防ぐために停止イベントを設定
                             self.stop_event.set()
-                            # 使用 try-except 包装关闭操作，确保不会因为异常而阻塞
+                            # クローズ操作をtry-exceptでラップし、例外によるブロッキングを防ぐ
                             try:
                                 await self.close(self.websocket)
                             except Exception as close_error:
                                 self.logger.bind(tag=TAG).error(
-                                    f"超时关闭连接时出错: {close_error}"
+                                    f"タイムアウトで接続を閉じる際にエラーが発生しました: {close_error}"
                                 )
                         break
-                # 每10秒检查一次，避免过于频繁
+                # 10秒ごとにチェックして、頻繁すぎるチェックを避ける
                 await asyncio.sleep(10)
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"超时检查任务出错: {e}")
+            self.logger.bind(tag=TAG).error(f"タイムアウトチェックタスクでエラーが発生しました: {e}")
         finally:
-            self.logger.bind(tag=TAG).info("超时检查任务已退出")
+            self.logger.bind(tag=TAG).info("タイムアウトチェックタスクが終了しました")

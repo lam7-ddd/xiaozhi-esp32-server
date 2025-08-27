@@ -12,7 +12,7 @@ from plugins_func.register import Action
 
 TAG = __name__
 
-# 设置最大文件大小为5MB
+# 最大ファイルサイズを5MBに設定
 MAX_FILE_SIZE = 5 * 1024 * 1024
 
 
@@ -20,79 +20,79 @@ class VisionHandler:
     def __init__(self, config: dict):
         self.config = config
         self.logger = setup_logging()
-        # 初始化认证工具
+        # 認証ツールを初期化
         self.auth = AuthToken(config["server"]["auth_key"])
 
     def _create_error_response(self, message: str) -> dict:
-        """创建统一的错误响应格式"""
+        """統一されたエラーレスポンス形式を作成します"""
         return {"success": False, "message": message}
 
     def _verify_auth_token(self, request) -> Tuple[bool, Optional[str]]:
-        """验证认证token"""
+        """認証トークンを検証します"""
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
             return False, None
 
-        token = auth_header[7:]  # 移除"Bearer "前缀
+        token = auth_header[7:]  # "Bearer "プレフィックスを削除
         return self.auth.verify_token(token)
 
     async def handle_post(self, request):
-        """处理 MCP Vision POST 请求"""
-        response = None  # 初始化response变量
+        """MCP Vision POSTリクエストを処理します"""
+        response = None  # response変数を初期化
         try:
-            # 验证token
+            # トークンを検証
             is_valid, token_device_id = self._verify_auth_token(request)
             if not is_valid:
                 response = web.Response(
                     text=json.dumps(
-                        self._create_error_response("无效的认证token或token已过期")
+                        self._create_error_response("無効な認証トークンまたはトークンが期限切れです")
                     ),
                     content_type="application/json",
                     status=401,
                 )
                 return response
 
-            # 获取请求头信息
+            # リクエストヘッダー情報を取得
             device_id = request.headers.get("Device-Id", "")
             client_id = request.headers.get("Client-Id", "")
             if device_id != token_device_id:
-                raise ValueError("设备ID与token不匹配")
-            # 解析multipart/form-data请求
+                raise ValueError("デバイスIDがトークンと一致しません")
+            # multipart/form-dataリクエストを解析
             reader = await request.multipart()
 
-            # 读取question字段
+            # questionフィールドを読み取り
             question_field = await reader.next()
             if question_field is None:
-                raise ValueError("缺少问题字段")
+                raise ValueError("質問フィールドがありません")
             question = await question_field.text()
-            self.logger.bind(tag=TAG).debug(f"Question: {question}")
+            self.logger.bind(tag=TAG).debug(f"質問: {question}")
 
-            # 读取图片文件
+            # 画像ファイルを読み取り
             image_field = await reader.next()
             if image_field is None:
-                raise ValueError("缺少图片文件")
+                raise ValueError("画像ファイルがありません")
 
-            # 读取图片数据
+            # 画像データを読み取り
             image_data = await image_field.read()
             if not image_data:
-                raise ValueError("图片数据为空")
+                raise ValueError("画像データが空です")
 
-            # 检查文件大小
+            # ファイルサイズを確認
             if len(image_data) > MAX_FILE_SIZE:
                 raise ValueError(
-                    f"图片大小超过限制，最大允许{MAX_FILE_SIZE/1024/1024}MB"
+                    f"画像サイズが制限を超えています。最大許容サイズは{MAX_FILE_SIZE/1024/1024}MBです"
                 )
 
-            # 检查文件格式
+            # ファイル形式を確認
             if not is_valid_image_file(image_data):
                 raise ValueError(
-                    "不支持的文件格式，请上传有效的图片文件（支持JPEG、PNG、GIF、BMP、TIFF、WEBP格式）"
+                    "サポートされていないファイル形式です。有効な画像ファイル（JPEG、PNG、GIF、BMP、TIFF、WEBP形式をサポート）をアップロードしてください"
                 )
 
-            # 将图片转换为base64编码
+            # 画像をbase64エンコーディングに変換
             image_base64 = base64.b64encode(image_data).decode("utf-8")
 
-            # 如果开启了智控台，则从智控台获取模型配置
+            # スマートコントロールパネルが有効な場合は、そこからモデル設定を取得
             current_config = copy.deepcopy(self.config)
             read_config_from_api = current_config.get("read_config_from_api", False)
             if read_config_from_api:
@@ -104,7 +104,7 @@ class VisionHandler:
 
             select_vllm_module = current_config["selected_module"].get("VLLM")
             if not select_vllm_module:
-                raise ValueError("您还未设置默认的视觉分析模块")
+                raise ValueError("デフォルトの視覚分析モジュールがまだ設定されていません")
 
             vllm_type = (
                 select_vllm_module
@@ -113,7 +113,7 @@ class VisionHandler:
             )
 
             if not vllm_type:
-                raise ValueError(f"无法找到VLLM模块对应的供应器{vllm_type}")
+                raise ValueError(f"VLLMモジュールに対応するプロバイダーが見つかりません{vllm_type}")
 
             vllm = create_instance(
                 vllm_type, current_config["VLLM"][select_vllm_module]
@@ -132,15 +132,15 @@ class VisionHandler:
                 content_type="application/json",
             )
         except ValueError as e:
-            self.logger.bind(tag=TAG).error(f"MCP Vision POST请求异常: {e}")
+            self.logger.bind(tag=TAG).error(f"MCP Vision POSTリクエスト例外: {e}")
             return_json = self._create_error_response(str(e))
             response = web.Response(
                 text=json.dumps(return_json, separators=(",", ":")),
                 content_type="application/json",
             )
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"MCP Vision POST请求异常: {e}")
-            return_json = self._create_error_response("处理请求时发生错误")
+            self.logger.bind(tag=TAG).error(f"MCP Vision POSTリクエスト例外: {e}")
+            return_json = self._create_error_response("リクエストの処理中にエラーが発生しました")
             response = web.Response(
                 text=json.dumps(return_json, separators=(",", ":")),
                 content_type="application/json",
@@ -151,20 +151,20 @@ class VisionHandler:
             return response
 
     async def handle_get(self, request):
-        """处理 MCP Vision GET 请求"""
+        """MCP Vision GETリクエストを処理します"""
         try:
             vision_explain = get_vision_url(self.config)
             if vision_explain and len(vision_explain) > 0 and "null" != vision_explain:
                 message = (
-                    f"MCP Vision 接口运行正常，视觉解释接口地址是：{vision_explain}"
+                    f"MCP Visionインターフェースは正常に動作しています。視覚解説インターフェースのアドレスは次のとおりです：{vision_explain}"
                 )
             else:
-                message = "MCP Vision 接口运行不正常，请打开data目录下的.config.yaml文件，找到【server.vision_explain】，设置好地址"
+                message = "MCP Visionインターフェースは正常に動作していません。dataディレクトリの.config.yamlファイルを開き、【server.vision_explain】にアドレスを設定してください"
 
             response = web.Response(text=message, content_type="text/plain")
         except Exception as e:
-            self.logger.bind(tag=TAG).error(f"MCP Vision GET请求异常: {e}")
-            return_json = self._create_error_response("服务器内部错误")
+            self.logger.bind(tag=TAG).error(f"MCP Vision GETリクエスト例外: {e}")
+            return_json = self._create_error_response("サーバー内部エラー")
             response = web.Response(
                 text=json.dumps(return_json, separators=(",", ":")),
                 content_type="application/json",
@@ -174,7 +174,7 @@ class VisionHandler:
             return response
 
     def _add_cors_headers(self, response):
-        """添加CORS头信息"""
+        """CORSヘッダーを追加します"""
         response.headers["Access-Control-Allow-Headers"] = (
             "client-id, content-type, device-id"
         )

@@ -16,9 +16,9 @@ logger = setup_logging()
 
 async def wait_for_exit() -> None:
     """
-    阻塞直到收到 Ctrl‑C / SIGTERM。
-    - Unix: 使用 add_signal_handler
-    - Windows: 依赖 KeyboardInterrupt
+    Ctrl-C / SIGTERM を受信するまでブロックします。
+    - Unix: add_signal_handler を使用
+    - Windows: KeyboardInterrupt に依存
     """
     loop = asyncio.get_running_loop()
     stop_event = asyncio.Event()
@@ -28,8 +28,9 @@ async def wait_for_exit() -> None:
             loop.add_signal_handler(sig, stop_event.set)
         await stop_event.wait()
     else:
-        # Windows：await一个永远pending的fut，
-        # 让 KeyboardInterrupt 冒泡到 asyncio.run，以此消除遗留普通线程导致进程退出阻塞的问题
+        # Windows: 常にペンディング状態の future を await し、
+        # KeyboardInterrupt を asyncio.run にバブルアップさせることで、
+        # 古い通常のスレッドが原因でプロセスの終了がブロックされる問題を解消します。
         try:
             await asyncio.Future()
         except KeyboardInterrupt:  # Ctrl‑C
@@ -37,30 +38,30 @@ async def wait_for_exit() -> None:
 
 
 async def monitor_stdin():
-    """监控标准输入，消费回车键"""
+    """標準入力を監視し、Enterキーを消費します"""
     while True:
-        await ainput()  # 异步等待输入，消费回车
+        await ainput()  # 非同期で入力を待ち、Enterキーを消費
 
 
 async def main():
     check_ffmpeg_installed()
     config = load_config()
 
-    # 默认使用manager-api的secret作为auth_key
-    # 如果secret为空，则生成随机密钥
-    # auth_key用于jwt认证，比如视觉分析接口的jwt认证
+    # デフォルトで manager-api の secret を auth_key として使用します
+    # secret が空の場合、ランダムなキーを生成します
+    # auth_key は JWT 認証に使用されます（例：ビジョン分析インターフェースの JWT 認証）
     auth_key = config.get("manager-api", {}).get("secret", "")
     if not auth_key or len(auth_key) == 0 or "你" in auth_key:
         auth_key = str(uuid.uuid4().hex)
     config["server"]["auth_key"] = auth_key
 
-    # 添加 stdin 监控任务
+    # stdin 監視タスクを追加
     stdin_task = asyncio.create_task(monitor_stdin())
 
-    # 启动 WebSocket 服务器
+    # WebSocket サーバーを起動
     ws_server = WebSocketServer(config)
     ws_task = asyncio.create_task(ws_server.start())
-    # 启动 Simple http 服务器
+    # Simple http サーバーを起動
     ota_server = SimpleHttpServer(config)
     ota_task = asyncio.create_task(ota_server.start())
 
@@ -68,71 +69,71 @@ async def main():
     port = int(config["server"].get("http_port", 8003))
     if not read_config_from_api:
         logger.bind(tag=TAG).info(
-            "OTA接口是\t\thttp://{}:{}/xiaozhi/ota/",
+            "OTAインターフェースは\t\thttp://{{}}:{{}}/xiaozhi/ota/",
             get_local_ip(),
             port,
         )
     logger.bind(tag=TAG).info(
-        "视觉分析接口是\thttp://{}:{}/mcp/vision/explain",
+        "ビジョン分析インターフェースは\thttp://{{}}:{{}}/mcp/vision/explain",
         get_local_ip(),
         port,
     )
     mcp_endpoint = config.get("mcp_endpoint", None)
     if mcp_endpoint is not None and "你" not in mcp_endpoint:
-        # 校验MCP接入点格式
+        # MCP アクセスポイントのフォーマットを検証
         if validate_mcp_endpoint(mcp_endpoint):
-            logger.bind(tag=TAG).info("mcp接入点是\t{}", mcp_endpoint)
-            # 将mcp计入点地址转成调用点
+            logger.bind(tag=TAG).info("mcpアクセスポイントは\t{}", mcp_endpoint)
+            # mcp アクセスポイントアドレスを呼び出しポイントに変換
             mcp_endpoint = mcp_endpoint.replace("/mcp/", "/call/")
             config["mcp_endpoint"] = mcp_endpoint
         else:
-            logger.bind(tag=TAG).error("mcp接入点不符合规范")
-            config["mcp_endpoint"] = "你的接入点 websocket地址"
+            logger.bind(tag=TAG).error("mcpアクセスポイントが仕様に準拠していません")
+            config["mcp_endpoint"] = "あなたのアクセスポイントのwebsocketアドレス"
 
-    # 获取WebSocket配置，使用安全的默认值
+    # WebSocket 設定を取得し、安全なデフォルト値を使用
     websocket_port = 8000
     server_config = config.get("server", {})
     if isinstance(server_config, dict):
         websocket_port = int(server_config.get("port", 8000))
 
     logger.bind(tag=TAG).info(
-        "Websocket地址是\tws://{}:{}/xiaozhi/v1/",
+        "Websocketアドレスは\tws://{{}}:{{}}/xiaozhi/v1/",
         get_local_ip(),
         websocket_port,
     )
 
     logger.bind(tag=TAG).info(
-        "=======上面的地址是websocket协议地址，请勿用浏览器访问======="
+        "=======上記のアドレスはwebsocketプロトコルアドレスです。ブラウザでアクセスしないでください======="
     )
     logger.bind(tag=TAG).info(
-        "如想测试websocket请用谷歌浏览器打开test目录下的test_page.html"
+        "websocketをテストしたい場合は、Google Chromeでtestディレクトリのtest_page.htmlを開いてください"
     )
     logger.bind(tag=TAG).info(
         "=============================================================\n"
     )
 
     try:
-        await wait_for_exit()  # 阻塞直到收到退出信号
+        await wait_for_exit()  # 終了シグナルを受信するまでブロック
     except asyncio.CancelledError:
-        print("任务被取消，清理资源中...")
+        print("タスクがキャンセルされました。リソースをクリーンアップしています...")
     finally:
-        # 取消所有任务（关键修复点）
+        # すべてのタスクをキャンセル（重要な修正点）
         stdin_task.cancel()
         ws_task.cancel()
         if ota_task:
             ota_task.cancel()
 
-        # 等待任务终止（必须加超时）
+        # タスクの終了を待つ（タイムアウトを必ず設定）
         await asyncio.wait(
             [stdin_task, ws_task, ota_task] if ota_task else [stdin_task, ws_task],
             timeout=3.0,
             return_when=asyncio.ALL_COMPLETED,
         )
-        print("服务器已关闭，程序退出。")
+        print("サーバーがシャットダウンしました。プログラムを終了します。")
 
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("手动中断，程序终止。")
+        print("手動で中断されました。プログラムを終了します。")

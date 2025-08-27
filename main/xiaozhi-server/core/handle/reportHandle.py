@@ -1,12 +1,12 @@
 """
-TTS上报功能已集成到ConnectionHandler类中。
+TTSレポート機能はConnectionHandlerクラスに統合されました。
 
-上报功能包括：
-1. 每个连接对象拥有自己的上报队列和处理线程
-2. 上报线程的生命周期与连接对象绑定
-3. 使用ConnectionHandler.enqueue_tts_report方法进行上报
+レポート機能には以下が含まれます：
+1. 各接続オブジェクトは、独自のレポートキューと処理スレッドを所有します
+2. レポートスレッドのライフサイクルは、接続オブジェクトにバインドされます
+3. ConnectionHandler.enqueue_tts_reportメソッドを使用してレポートします
 
-具体实现请参考core/connection.py中的相关代码。
+具体的な実装については、core/connection.pyの関連コードを参照してください。
 """
 
 import time
@@ -19,21 +19,21 @@ TAG = __name__
 
 
 def report(conn, type, text, opus_data, report_time):
-    """执行聊天记录上报操作
+    """チャット履歴のレポート操作を実行します
 
     Args:
-        conn: 连接对象
-        type: 上报类型，1为用户，2为智能体
-        text: 合成文本
-        opus_data: opus音频数据
-        report_time: 上报时间
+        conn: 接続オブジェクト
+        type: レポートタイプ、1はユーザー、2はエージェント
+        text: 合成テキスト
+        opus_data: opusオーディオデータ
+        report_time: レポート時間
     """
     try:
         if opus_data:
             audio_data = opus_to_wav(conn, opus_data)
         else:
             audio_data = None
-        # 执行上报
+        # レポートを実行
         manage_report(
             mac_address=conn.device_id,
             session_id=conn.session_id,
@@ -43,37 +43,37 @@ def report(conn, type, text, opus_data, report_time):
             report_time=report_time,
         )
     except Exception as e:
-        conn.logger.bind(tag=TAG).error(f"聊天记录上报失败: {e}")
+        conn.logger.bind(tag=TAG).error(f"チャット履歴のレポートに失敗しました: {e}")
 
 
 def opus_to_wav(conn, opus_data):
-    """将Opus数据转换为WAV格式的字节流
+    """OpusデータをWAV形式のバイトストリームに変換します
 
     Args:
-        output_dir: 输出目录（保留参数以保持接口兼容）
-        opus_data: opus音频数据
+        output_dir: 出力ディレクトリ（インターフェースの互換性を維持するための予約パラメータ）
+        opus_data: opusオーディオデータ
 
     Returns:
-        bytes: WAV格式的音频数据
+        bytes: WAV形式のオーディオデータ
     """
-    decoder = opuslib_next.Decoder(16000, 1)  # 16kHz, 单声道
+    decoder = opuslib_next.Decoder(16000, 1)  # 16kHz、モノラル
     pcm_data = []
 
     for opus_packet in opus_data:
         try:
-            pcm_frame = decoder.decode(opus_packet, 960)  # 960 samples = 60ms
+            pcm_frame = decoder.decode(opus_packet, 960)  # 960サンプル = 60ms
             pcm_data.append(pcm_frame)
         except opuslib_next.OpusError as e:
-            conn.logger.bind(tag=TAG).error(f"Opus解码错误: {e}", exc_info=True)
+            conn.logger.bind(tag=TAG).error(f"Opusデコードエラー: {e}", exc_info=True)
 
     if not pcm_data:
-        raise ValueError("没有有效的PCM数据")
+        raise ValueError("有効なPCMデータがありません")
 
-    # 创建WAV文件头
+    # WAVファイルヘッダーを作成
     pcm_data_bytes = b"".join(pcm_data)
-    num_samples = len(pcm_data_bytes) // 2  # 16-bit samples
+    num_samples = len(pcm_data_bytes) // 2  # 16ビットサンプル
 
-    # WAV文件头
+    # WAVファイルヘッダー
     wav_header = bytearray()
     wav_header.extend(b"RIFF")  # ChunkID
     wav_header.extend((36 + len(pcm_data_bytes)).to_bytes(4, "little"))  # ChunkSize
@@ -89,7 +89,7 @@ def opus_to_wav(conn, opus_data):
     wav_header.extend(b"data")  # Subchunk2ID
     wav_header.extend(len(pcm_data_bytes).to_bytes(4, "little"))  # Subchunk2Size
 
-    # 返回完整的WAV数据
+    # 完全なWAVデータを返す
     return bytes(wav_header) + pcm_data_bytes
 
 
@@ -98,27 +98,27 @@ def enqueue_tts_report(conn, text, opus_data):
         return
     if conn.chat_history_conf == 0:
         return
-    """将TTS数据加入上报队列
+    """TTSデータをレポートキューに追加します
 
     Args:
-        conn: 连接对象
-        text: 合成文本
-        opus_data: opus音频数据
+        conn: 接続オブジェクト
+        text: 合成テキスト
+        opus_data: opusオーディオデータ
     """
     try:
-        # 使用连接对象的队列，传入文本和二进制数据而非文件路径
+        # 接続オブジェクトのキューを使用し、ファイルパスではなくテキストとバイナリデータを渡す
         if conn.chat_history_conf == 2:
             conn.report_queue.put((2, text, opus_data, int(time.time())))
             conn.logger.bind(tag=TAG).debug(
-                f"TTS数据已加入上报队列: {conn.device_id}, 音频大小: {len(opus_data)} "
+                f"TTSデータがレポートキューに追加されました: {conn.device_id}, オーディオサイズ: {len(opus_data)} "
             )
         else:
             conn.report_queue.put((2, text, None, int(time.time())))
             conn.logger.bind(tag=TAG).debug(
-                f"TTS数据已加入上报队列: {conn.device_id}, 不上报音频"
+                f"TTSデータがレポートキューに追加されました: {conn.device_id}, オーディオはレポートしません"
             )
     except Exception as e:
-        conn.logger.bind(tag=TAG).error(f"加入TTS上报队列失败: {text}, {e}")
+        conn.logger.bind(tag=TAG).error(f"TTSレポートキューへの追加に失敗しました: {text}, {e}")
 
 
 def enqueue_asr_report(conn, text, opus_data):
@@ -126,24 +126,24 @@ def enqueue_asr_report(conn, text, opus_data):
         return
     if conn.chat_history_conf == 0:
         return
-    """将ASR数据加入上报队列
+    """ASRデータをレポートキューに追加します
 
     Args:
-        conn: 连接对象
-        text: 合成文本
-        opus_data: opus音频数据
+        conn: 接続オブジェクト
+        text: 合成テキスト
+        opus_data: opusオーディオデータ
     """
     try:
-        # 使用连接对象的队列，传入文本和二进制数据而非文件路径
+        # 接続オブジェクトのキューを使用し、ファイルパスではなくテキストとバイナリデータを渡す
         if conn.chat_history_conf == 2:
             conn.report_queue.put((1, text, opus_data, int(time.time())))
             conn.logger.bind(tag=TAG).debug(
-                f"ASR数据已加入上报队列: {conn.device_id}, 音频大小: {len(opus_data)} "
+                f"ASRデータがレポートキューに追加されました: {conn.device_id}, オーディオサイズ: {len(opus_data)} "
             )
         else:
             conn.report_queue.put((1, text, None, int(time.time())))
             conn.logger.bind(tag=TAG).debug(
-                f"ASR数据已加入上报队列: {conn.device_id}, 不上报音频"
+                f"ASRデータがレポートキューに追加されました: {conn.device_id}, オーディオはレポートしません"
             )
     except Exception as e:
-        conn.logger.bind(tag=TAG).debug(f"加入ASR上报队列失败: {text}, {e}")
+        conn.logger.bind(tag=TAG).debug(f"ASRレポートキューへの追加に失敗しました: {text}, {e}")

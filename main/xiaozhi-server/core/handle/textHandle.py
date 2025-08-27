@@ -13,25 +13,25 @@ TAG = __name__
 
 
 async def handleTextMessage(conn, message):
-    """处理文本消息"""
+    """テキストメッセージを処理します"""
     try:
         msg_json = json.loads(message)
         if isinstance(msg_json, int):
-            conn.logger.bind(tag=TAG).info(f"收到文本消息：{message}")
+            conn.logger.bind(tag=TAG).info(f"テキストメッセージを受信しました：{message}")
             await conn.websocket.send(message)
             return
         if msg_json["type"] == "hello":
-            conn.logger.bind(tag=TAG).info(f"收到hello消息：{message}")
+            conn.logger.bind(tag=TAG).info(f"helloメッセージを受信しました：{message}")
             await handleHelloMessage(conn, msg_json)
         elif msg_json["type"] == "abort":
-            conn.logger.bind(tag=TAG).info(f"收到abort消息：{message}")
+            conn.logger.bind(tag=TAG).info(f"abortメッセージを受信しました：{message}")
             await handleAbortMessage(conn)
         elif msg_json["type"] == "listen":
-            conn.logger.bind(tag=TAG).info(f"收到listen消息：{message}")
+            conn.logger.bind(tag=TAG).info(f"listenメッセージを受信しました：{message}")
             if "mode" in msg_json:
                 conn.client_listen_mode = msg_json["mode"]
                 conn.logger.bind(tag=TAG).debug(
-                    f"客户端拾音模式：{conn.client_listen_mode}"
+                    f"クライアントのピックアップモード：{conn.client_listen_mode}"
                 )
             if msg_json["state"] == "start":
                 conn.client_have_voice = True
@@ -45,77 +45,77 @@ async def handleTextMessage(conn, message):
                 conn.client_have_voice = False
                 conn.asr_audio.clear()
                 if "text" in msg_json:
-                    original_text = msg_json["text"]  # 保留原始文本
+                    original_text = msg_json["text"]  # 元のテキストを保持
                     filtered_len, filtered_text = remove_punctuation_and_length(
                         original_text
                     )
 
-                    # 识别是否是唤醒词
+                    # ウェイクアップワードかどうかを認識
                     is_wakeup_words = filtered_text in conn.config.get("wakeup_words")
-                    # 是否开启唤醒词回复
+                    # ウェイクアップワードの応答を有効にするかどうか
                     enable_greeting = conn.config.get("enable_greeting", True)
 
                     if is_wakeup_words and not enable_greeting:
-                        # 如果是唤醒词，且关闭了唤醒词回复，就不用回答
+                        # ウェイクアップワードであり、ウェイクアップワードの応答が無効になっている場合は、応答しない
                         await send_stt_message(conn, original_text)
                         await send_tts_message(conn, "stop", None)
                         conn.client_is_speaking = False
                     elif is_wakeup_words:
                         conn.just_woken_up = True
-                        # 上报纯文字数据（复用ASR上报功能，但不提供音频数据）
-                        enqueue_asr_report(conn, "嘿，你好呀", [])
-                        await startToChat(conn, "嘿，你好呀")
+                        # 純粋なテキストデータをレポート（ASRレポート機能を再利用するが、音声データは提供しない）
+                        enqueue_asr_report(conn, "こんにちは", [])
+                        await startToChat(conn, "こんにちは")
                     else:
-                        # 上报纯文字数据（复用ASR上报功能，但不提供音频数据）
+                        # 純粋なテキストデータをレポート（ASRレポート機能を再利用するが、音声データは提供しない）
                         enqueue_asr_report(conn, original_text, [])
-                        # 否则需要LLM对文字内容进行答复
+                        # それ以外の場合は、LLMにテキストコンテンツに応答させる必要がある
                         await startToChat(conn, original_text)
         elif msg_json["type"] == "iot":
-            conn.logger.bind(tag=TAG).info(f"收到iot消息：{message}")
+            conn.logger.bind(tag=TAG).info(f"iotメッセージを受信しました：{message}")
             if "descriptors" in msg_json:
                 asyncio.create_task(handleIotDescriptors(conn, msg_json["descriptors"]))
             if "states" in msg_json:
                 asyncio.create_task(handleIotStatus(conn, msg_json["states"]))
         elif msg_json["type"] == "mcp":
-            conn.logger.bind(tag=TAG).info(f"收到mcp消息：{message[:100]}")
+            conn.logger.bind(tag=TAG).info(f"mcpメッセージを受信しました：{message[:100]}")
             if "payload" in msg_json:
                 asyncio.create_task(
                     handle_mcp_message(conn, conn.mcp_client, msg_json["payload"])
                 )
         elif msg_json["type"] == "server":
-            # 记录日志时过滤敏感信息
+            # ログを記録する際に機密情報をフィルタリング
             conn.logger.bind(tag=TAG).info(
-                f"收到服务器消息：{filter_sensitive_info(msg_json)}"
+                f"サーバーメッセージを受信しました：{filter_sensitive_info(msg_json)}"
             )
-            # 如果配置是从API读取的，则需要验证secret
+            # 設定がAPIから読み込まれている場合は、secretを検証する必要がある
             if not conn.read_config_from_api:
                 return
-            # 获取post请求的secret
+            # postリクエストのsecretを取得
             post_secret = msg_json.get("content", {}).get("secret", "")
             secret = conn.config["manager-api"].get("secret", "")
-            # 如果secret不匹配，则返回
+            # secretが一致しない場合は、戻る
             if post_secret != secret:
                 await conn.websocket.send(
                     json.dumps(
                         {
                             "type": "server",
                             "status": "error",
-                            "message": "服务器密钥验证失败",
+                            "message": "サーバーキーの検証に失敗しました",
                         }
                     )
                 )
                 return
-            # 动态更新配置
+            # 設定を動的に更新
             if msg_json["action"] == "update_config":
                 try:
-                    # 更新WebSocketServer的配置
+                    # WebSocketServerの設定を更新
                     if not conn.server:
                         await conn.websocket.send(
                             json.dumps(
                                 {
                                     "type": "server",
                                     "status": "error",
-                                    "message": "无法获取服务器实例",
+                                    "message": "サーバーインスタンスを取得できません",
                                     "content": {"action": "update_config"},
                                 }
                             )
@@ -128,40 +128,40 @@ async def handleTextMessage(conn, message):
                                 {
                                     "type": "server",
                                     "status": "error",
-                                    "message": "更新服务器配置失败",
+                                    "message": "サーバー設定の更新に失敗しました",
                                     "content": {"action": "update_config"},
                                 }
                             )
                         )
                         return
 
-                    # 发送成功响应
+                    # 成功応答を送信
                     await conn.websocket.send(
                         json.dumps(
                             {
                                 "type": "server",
                                 "status": "success",
-                                "message": "配置更新成功",
+                                "message": "設定の更新に成功しました",
                                 "content": {"action": "update_config"},
                             }
                         )
                     )
                 except Exception as e:
-                    conn.logger.bind(tag=TAG).error(f"更新配置失败: {str(e)}")
+                    conn.logger.bind(tag=TAG).error(f"設定の更新に失敗しました: {str(e)}")
                     await conn.websocket.send(
                         json.dumps(
                             {
                                 "type": "server",
                                 "status": "error",
-                                "message": f"更新配置失败: {str(e)}",
+                                "message": f"設定の更新に失敗しました: {str(e)}",
                                 "content": {"action": "update_config"},
                             }
                         )
                     )
-            # 重启服务器
+            # サーバーを再起動
             elif msg_json["action"] == "restart":
                 await conn.handle_restart(msg_json)
         else:
-            conn.logger.bind(tag=TAG).error(f"收到未知类型消息：{message}")
+            conn.logger.bind(tag=TAG).error(f"不明なタイプのメッセージを受信しました：{message}")
     except json.JSONDecodeError:
         await conn.websocket.send(message)

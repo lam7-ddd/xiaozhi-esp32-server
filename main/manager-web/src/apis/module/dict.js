@@ -2,7 +2,7 @@ import { getServiceUrl } from '../api';
 import RequestService from '../httpRequest';
 
 export default {
-    // 获取字典类型列表
+    // 辞書タイプリストを取得
     getDictTypeList(params, callback) {
         const queryParams = new URLSearchParams({
             dictType: params.dictType || '',
@@ -19,15 +19,15 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('获取字典类型列表失败:', err)
-                this.$message.error(err.msg || '获取字典类型列表失败')
+                console.error('辞書タイプ一覧の取得に失敗しました:', err)
+                this.$message.error(err.msg || '辞書タイプ一覧の取得に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.getDictTypeList(params, callback)
                 })
             }).send()
     },
 
-    // 获取字典类型详情
+    // 辞書タイプの詳細を取得
     getDictTypeDetail(id, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/admin/dict/type/${id}`)
@@ -37,15 +37,15 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('获取字典类型详情失败:', err)
-                this.$message.error(err.msg || '获取字典类型详情失败')
+                console.error('辞書タイプの詳細の取得に失敗しました:', err)
+                this.$message.error(err.msg || '辞書タイプの詳細の取得に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.getDictTypeDetail(id, callback)
                 })
             }).send()
     },
 
-    // 新增字典类型
+    // 辞書タイプを新規追加
     addDictType(data, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/admin/dict/type/save`)
@@ -56,15 +56,15 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('新增字典类型失败:', err)
-                this.$message.error(err.msg || '新增字典类型失败')
+                console.error('辞書タイプの追加に失敗しました:', err)
+                this.$message.error(err.msg || '辞書タイプの追加に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.addDictType(data, callback)
                 })
             }).send()
     },
 
-    // 更新字典类型
+    // 辞書タイプを更新
     updateDictType(data, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/admin/dict/type/update`)
@@ -75,15 +75,15 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('更新字典类型失败:', err)
-                this.$message.error(err.msg || '更新字典类型失败')
+                console.error('辞書タイプの更新に失敗しました:', err)
+                this.$message.error(err.msg || '辞書タイプの更新に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.updateDictType(data, callback)
                 })
             }).send()
     },
 
-    // 删除字典类型
+    // 辞書タイプを削除
     deleteDictType(ids, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/admin/dict/type/delete`)
@@ -94,15 +94,15 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('删除字典类型失败:', err)
-                this.$message.error(err.msg || '删除字典类型失败')
+                console.error('辞書タイプの削除に失敗しました:', err)
+                this.$message.error(err.msg || '辞書タイプの削除に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.deleteDictType(ids, callback)
                 })
             }).send()
     },
 
-    // 获取字典数据列表
+    // 辞書データリストを取得
     getDictDataList(params, callback) {
         const queryParams = new URLSearchParams({
             dictTypeId: params.dictTypeId,
@@ -120,15 +120,15 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('获取字典数据列表失败:', err)
-                this.$message.error(err.msg || '获取字典数据列表失败')
+                console.error('辞書データ一覧の取得に失敗しました:', err)
+                this.$message.error(err.msg || '辞書データ一覧の取得に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.getDictDataList(params, callback)
                 })
             }).send()
     },
 
-    // 获取字典数据详情
+    // 辞書データの詳細を取得
     getDictDataDetail(id, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/admin/dict/data/${id}`)
@@ -138,15 +138,15 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('获取字典数据详情失败:', err)
-                this.$message.error(err.msg || '获取字典数据详情失败')
+                console.error('辞書データの詳細の取得に失敗しました:', err)
+                this.$message.error(err.msg || '辞書データの詳細の取得に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.getDictDataDetail(id, callback)
                 })
             }).send()
     },
 
-    // 新增字典数据
+    // 辞書データを新規追加
     addDictData(data, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/admin/dict/data/save`)
@@ -157,15 +157,15 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('新增字典数据失败:', err)
-                this.$message.error(err.msg || '新增字典数据失败')
+                console.error('辞書データの追加に失敗しました:', err)
+                this.$message.error(err.msg || '辞書データの追加に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.addDictData(data, callback)
                 })
             }).send()
     },
 
-    // 更新字典数据
+    // 辞書データを更新
     updateDictData(data, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/admin/dict/data/update`)
@@ -176,15 +176,15 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('更新字典数据失败:', err)
-                this.$message.error(err.msg || '更新字典数据失败')
+                console.error('辞書データの更新に失敗しました:', err)
+                this.$message.error(err.msg || '辞書データの更新に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.updateDictData(data, callback)
                 })
             }).send()
     },
 
-    // 删除字典数据
+    // 辞書データを削除
     deleteDictData(ids, callback) {
         RequestService.sendRequest()
             .url(`${getServiceUrl()}/admin/dict/data/delete`)
@@ -195,15 +195,15 @@ export default {
                 callback(res)
             })
             .networkFail((err) => {
-                console.error('删除字典数据失败:', err)
-                this.$message.error(err.msg || '删除字典数据失败')
+                console.error('辞書データの削除に失敗しました:', err)
+                this.$message.error(err.msg || '辞書データの削除に失敗しました')
                 RequestService.reAjaxFun(() => {
                     this.deleteDictData(ids, callback)
                 })
             }).send()
     },
 
-    // 获取字典数据列表
+    // 辞書データリストを取得
     getDictDataByType(dictType) {
         return new Promise((resolve, reject) => {
             RequestService.sendRequest()
@@ -214,11 +214,11 @@ export default {
                     if (res.data && res.data.code === 0) {
                         resolve(res.data)
                     } else {
-                        reject(new Error(res.data?.msg || '获取字典数据列表失败'))
+                        reject(new Error(res.data?.msg || '辞書データ一覧の取得に失敗しました'))
                     }
                 })
                 .networkFail((err) => {
-                    console.error('获取字典数据列表失败:', err)
+                    console.error('辞書データ一覧の取得に失敗しました:', err)
                     reject(err)
                 }).send()
         })

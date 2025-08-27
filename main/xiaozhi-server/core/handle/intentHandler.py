@@ -14,32 +14,32 @@ TAG = __name__
 
 
 async def handle_user_intent(conn, text):
-    # 检查是否有明确的退出命令
+    # 明確な終了コマンドがあるか確認
     filtered_text = remove_punctuation_and_length(text)[1]
     if await check_direct_exit(conn, filtered_text):
         return True
-    # 检查是否是唤醒词
+    # ウェイクアップワードかどうかを確認
     if await checkWakeupWords(conn, filtered_text):
         return True
 
     if conn.intent_type == "function_call":
-        # 使用支持function calling的聊天方法,不再进行意图分析
+        # function callingをサポートするチャットメソッドを使用し、意図分析は行わない
         return False
-    # 使用LLM进行意图分析
+    # LLMを使用して意図を分析
     intent_result = await analyze_intent_with_llm(conn, text)
     if not intent_result:
         return False
-    # 处理各种意图
+    # 様々な意図を処理
     return await process_intent_result(conn, intent_result, text)
 
 
 async def check_direct_exit(conn, text):
-    """检查是否有明确的退出命令"""
+    """明確な終了コマンドがあるか確認します"""
     _, text = remove_punctuation_and_length(text)
     cmd_exit = conn.cmd_exit
     for cmd in cmd_exit:
         if text == cmd:
-            conn.logger.bind(tag=TAG).info(f"识别到明确的退出命令: {text}")
+            conn.logger.bind(tag=TAG).info(f"明確な終了コマンドを認識しました: {text}")
             await send_stt_message(conn, text)
             await conn.close()
             return True
@@ -47,33 +47,33 @@ async def check_direct_exit(conn, text):
 
 
 async def analyze_intent_with_llm(conn, text):
-    """使用LLM分析用户意图"""
+    """LLMを使用してユーザーの意図を分析します"""
     if not hasattr(conn, "intent") or not conn.intent:
-        conn.logger.bind(tag=TAG).warning("意图识别服务未初始化")
+        conn.logger.bind(tag=TAG).warning("意図認識サービスが初期化されていません")
         return None
 
-    # 对话历史记录
+    # 対話履歴
     dialogue = conn.dialogue
     try:
         intent_result = await conn.intent.detect_intent(conn, dialogue.dialogue, text)
         return intent_result
     except Exception as e:
-        conn.logger.bind(tag=TAG).error(f"意图识别失败: {str(e)}")
+        conn.logger.bind(tag=TAG).error(f"意図認識に失敗しました: {str(e)}")
 
     return None
 
 
 async def process_intent_result(conn, intent_result, original_text):
-    """处理意图识别结果"""
+    """意図認識結果を処理します"""
     try:
-        # 尝试将结果解析为JSON
+        # 結果をJSONとして解析しようと試みる
         intent_data = json.loads(intent_result)
 
-        # 检查是否有function_call
+        # function_callがあるか確認
         if "function_call" in intent_data:
-            # 直接从意图识别获取了function_call
+            # 意図認識から直接function_callを取得
             conn.logger.bind(tag=TAG).debug(
-                f"检测到function_call格式的意图结果: {intent_data['function_call']['name']}"
+                f"function_call形式の意図結果を検出しました: {intent_data['function_call']['name']}"
             )
             function_name = intent_data["function_call"]["name"]
             if function_name == "continue_chat":
@@ -84,7 +84,7 @@ async def process_intent_result(conn, intent_result, original_text):
                 function_args = intent_data["function_call"]["arguments"]
                 if function_args is None:
                     function_args = {}
-            # 确保参数是字符串格式的JSON
+            # パラメータが文字列形式のJSONであることを確認
             if isinstance(function_args, dict):
                 function_args = json.dumps(function_args)
 
@@ -97,11 +97,11 @@ async def process_intent_result(conn, intent_result, original_text):
             await send_stt_message(conn, original_text)
             conn.client_abort = False
 
-            # 使用executor执行函数调用和结果处理
+            # executorを使用して関数呼び出しと結果処理を実行
             def process_function_call():
                 conn.dialogue.put(Message(role="user", content=original_text))
 
-                # 使用统一工具处理器处理所有工具调用
+                # 統一ツールハンドラを使用してすべてのツール呼び出しを処理
                 try:
                     result = asyncio.run_coroutine_threadsafe(
                         conn.func_handler.handle_llm_function_call(
@@ -110,17 +110,17 @@ async def process_intent_result(conn, intent_result, original_text):
                         conn.loop,
                     ).result()
                 except Exception as e:
-                    conn.logger.bind(tag=TAG).error(f"工具调用失败: {e}")
+                    conn.logger.bind(tag=TAG).error(f"ツール呼び出しに失敗しました: {e}")
                     result = ActionResponse(
                         action=Action.ERROR, result=str(e), response=str(e)
                     )
 
                 if result:
-                    if result.action == Action.RESPONSE:  # 直接回复前端
+                    if result.action == Action.RESPONSE:  # フロントエンドに直接応答
                         text = result.response
                         if text is not None:
                             speak_txt(conn, text)
-                    elif result.action == Action.REQLLM:  # 调用函数后再请求llm生成回复
+                    elif result.action == Action.REQLLM:  # 関数を呼び出した後、llmに再度リクエストして応答を生成
                         text = result.result
                         conn.dialogue.put(Message(role="tool", content=text))
                         llm_result = conn.intent.replyResult(text, original_text)
@@ -135,20 +135,20 @@ async def process_intent_result(conn, intent_result, original_text):
                         if text is not None:
                             speak_txt(conn, text)
                     elif function_name != "play_music":
-                        # For backward compatibility with original code
-                        # 获取当前最新的文本索引
+                        # 元のコードとの下位互換性のため
+                        # 最新のテキストインデックスを取得
                         text = result.response
                         if text is None:
                             text = result.result
                         if text is not None:
                             speak_txt(conn, text)
 
-            # 将函数执行放在线程池中
+            # 関数実行をスレッドプールに配置
             conn.executor.submit(process_function_call)
             return True
         return False
     except json.JSONDecodeError as e:
-        conn.logger.bind(tag=TAG).error(f"处理意图结果时出错: {e}")
+        conn.logger.bind(tag=TAG).error(f"意図結果の処理中にエラーが発生しました: {e}")
         return False
 
 

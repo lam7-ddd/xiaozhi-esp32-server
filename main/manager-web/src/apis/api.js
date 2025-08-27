@@ -1,4 +1,4 @@
-// 引入各个模块的请求
+// 各モジュールのリクエストをインポート
 import admin from './module/admin.js'
 import agent from './module/agent.js'
 import device from './module/device.js'
@@ -9,21 +9,21 @@ import timbre from "./module/timbre.js"
 import user from './module/user.js'
 
 /**
- * 接口地址
- * 开发时自动读取使用.env.development文件
- * 编译时自动读取使用.env.production文件
+ * APIアドレス
+ * 開発時は.env.developmentファイルを自動的に読み込んで使用します
+ * ビルド時は.env.productionファイルを自動的に読み込んで使用します
  */
 const DEV_API_SERVICE = process.env.VUE_APP_API_BASE_URL
 
 /**
- * 根据开发环境返回接口url
+ * 開発環境に応じてAPIのURLを返します
  * @returns {string}
  */
 export function getServiceUrl() {
     return DEV_API_SERVICE
 }
 
-/** request服务封装 */
+/** requestサービスのカプセル化 */
 export default {
     getServiceUrl,
     user,
