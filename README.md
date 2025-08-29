@@ -41,7 +41,7 @@ XiaoZhiサーバーを迅速に構築するのに役立ちます
 
 ## 対象者 👥
 
-このプロジェクトはESP32ハードウェアデバイスと連携して使用する必要があります。ESP32関連のハードウェアを既に購入し、Xia哥がデプロイしたバックエンドサービスに正常に接続した経験があり、独自の`xiaozhi-esp32`バックエンドサービスを構築したい場合は、このプロジェクトが最適です。
+このプロジェクトは ESP32 ハードウェアデバイスと連携して使用する必要があります。ESP32 関連のハードウェアを既に購入し、Xia 哥がデプロイしたバックエンドサービスに正常に接続した経験があり、独自の`xiaozhi-esp32`バックエンドサービスを構築したい場合は、このプロジェクトが最適です。
 
 使用効果を見たいですか？ビデオをクリックしてください 🎥
 
@@ -78,7 +78,7 @@ XiaoZhiサーバーを迅速に構築するのに役立ちます
     <td>
         <a href="https://www.bilibili.com/video/BV1kgA2eYEQ9" target="_blank">
          <picture>
-           <img alt="成本最低配置" src="docs/images/demo4.png" />
+           <img alt="コスト最低配置" src="docs/images/demo4.png" />
          </picture>
         </a>
     </td>
@@ -101,21 +101,21 @@ XiaoZhiサーバーを迅速に構築するのに役立ちます
     <td>
         <a href="https://www.bilibili.com/video/BV1Z8XuYZEAS" target="_blank">
          <picture>
-           <img alt="天气插件" src="docs/images/demo8.png" />
+           <img alt="天気プラグイン" src="docs/images/demo8.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV178XuYfEpi" target="_blank">
          <picture>
-           <img alt="IOT指令控制设备" src="docs/images/demo9.png" />
+           <img alt="IOT指令制御デバイス" src="docs/images/demo9.png" />
          </picture>
         </a>
     </td>
     <td>
         <a href="https://www.bilibili.com/video/BV17LXWYvENb" target="_blank">
          <picture>
-           <img alt="播报新闻" src="docs/images/demo0.png" />
+           <img alt="ニュース放送" src="docs/images/demo0.png" />
          </picture>
         </a>
     </td>
@@ -124,28 +124,28 @@ XiaoZhiサーバーを迅速に構築するのに役立ちます
     <td>
       <a href="https://www.bilibili.com/video/BV12J7WzBEaH" target="_blank">
          <picture>
-           <img alt="实时打断" src="docs/images/demo10.png" />
+           <img alt="リアルタイム中断" src="docs/images/demo10.png" />
          </picture>
         </a>
     </td>
     <td>
       <a href="https://www.bilibili.com/video/BV1Co76z7EvK" target="_blank">
          <picture>
-           <img alt="拍照识物品" src="docs/images/demo12.png" />
+           <img alt="写真撮影による物体認識" src="docs/images/demo12.png" />
          </picture>
         </a>
     </td>
     <td>
       <a href="https://www.bilibili.com/video/BV1TJ7WzzEo6" target="_blank">
          <picture>
-           <img alt="多指令任务" src="docs/images/demo11.png" />
+           <img alt="複数の指令タスク" src="docs/images/demo11.png" />
          </picture>
         </a>
     </td>
     <td>
           <a href="https://www.bilibili.com/video/BV1ZQKUzYExM" target="_blank">
          <picture>
-           <img alt="MCP接入点" src="docs/images/demo13.png" />
+           <img alt="MCPアクセスポイント" src="docs/images/demo13.png" />
          </picture>
         </a>
     </td>
@@ -158,8 +158,8 @@ XiaoZhiサーバーを迅速に構築するのに役立ちます
 
 ## 警告 ⚠️
 
-1. このプロジェクトはオープンソースソフトウェアです。このソフトウェアは、音声認識、大規模言語モデル、音声合成などのプラットフォームを含む、いかなるサードパーティAPIサービスプロバイダーとも商業的な協力関係になく、そのサービス品質や資金の安全性についていかなる形の保証も提供しません。
-利用者は、関連するビジネスライセンスを保有するサービスプロバイダーを優先的に選択し、そのサービス契約とプライバシーポリシーを注意深く読むことをお勧めします。このソフトウェアは、アカウントのキーを保管せず、資金の移動に関与せず、チャージ資金の損失リスクを負いません。
+1. このプロジェクトはオープンソースソフトウェアです。このソフトウェアは、音声認識、大規模言語モデル、音声合成などのプラットフォームを含む、いかなるサードパーティ API サービスプロバイダーとも商業的な協力関係になく、そのサービス品質や資金の安全性についていかなる形の保証も提供しません。
+   利用者は、関連するビジネスライセンスを保有するサービスプロバイダーを優先的に選択し、そのサービス契約とプライバシーポリシーを注意深く読むことをお勧めします。このソフトウェアは、アカウントのキーを保管せず、資金の移動に関与せず、チャージ資金の損失リスクを負いません。
 
 2. このプロジェクトの機能は未完成であり、ネットワークセキュリティ評価を通過していません。本番環境では使用しないでください。公開ネットワーク環境でこのプロジェクトを学習・デプロイする場合は、必要な保護措置を必ず講じてください。
 
@@ -169,16 +169,16 @@ XiaoZhiサーバーを迅速に構築するのに役立ちます
 
 ![Banners](docs/images/banner2.png)
 
-このプロジェクトでは2つのデプロイ方法を提供しています。具体的なニーズに合わせて選択してください：
+このプロジェクトでは 2 つのデプロイ方法を提供しています。具体的なニーズに合わせて選択してください：
 
 #### 🚀 デプロイ方法の選択
-| デプロイ方法 | 特徴 | 適用シーン | デプロイドキュメント | 設定要件 | ビデオチュートリアル | 
-|---|---|---|---|---|---|
-| **最小インストール** | スマート対話、IoT、MCP、視覚認識 | 低スペック環境、データは設定ファイルに保存、データベース不要 | [①Docker版](./docs/Deployment.md#%E6%96%B9%E5%BC%8F%E4%B8%80docker%E5%8F%AA%E8%BF%90%E8%A1%8Cserver) / [②ソースコードデプロイ](./docs/Deployment.md#%E6%96%B9%E5%BC%8F%E4%BA%8C%E6%9C%AC%E5%9C%B0%E6%BA%90%E7%A0%81%E5%8F%AA%E8%BF%90%E8%A1%8Cserver)| `FunASR`を使用する場合は2コア4G、すべてAPIの場合は2コア2Gが必要 | - | 
-| **フルモジュールインストール** | スマート対話、IoT、MCPアクセスポイント、視覚認識、OTA、スマートコントロールパネル | 完全な機能体験、データはデータベースに保存 |[①Docker版](./docs/Deployment_all.md#%E6%96%B9%E5%BC%8F%E4%B8%80docker%E8%BF%90%E8%A1%8C%E5%85%A8%E6%A8%A1%E5%9D%97) / [②ソースコードデプロイ](./docs/Deployment_all.md#%E6%96%B9%E5%BC%8F%E4%BA%8C%E6%9C%AC%E5%9C%B0%E6%BA%90%E7%A0%81%E8%BF%90%E8%A1%8C%E5%85%A8%E6%A8%A1%E5%9D%97) / [③ソースコードデプロイ自動更新チュートリアル](./docs/dev-ops-integration.md) | `FunASR`を使用する場合は4コア8G、すべてAPIの場合は2コア4Gが必要| [ローカルソースコード起動ビデオチュートリアル](https://www.bilibili.com/video/BV1wBJhz4Ewe) | 
 
+| デプロイ方法                   | 特徴                                                                               | 適用シーン                                                   | デプロイドキュメント                                                                                                                                                                                                                                                                                                                                                    | 設定要件                                                                 | ビデオチュートリアル                                                                        |
+| ------------------------------ | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| **最小インストール**           | スマート対話、IoT、MCP、視覚認識                                                   | 低スペック環境、データは設定ファイルに保存、データベース不要 | [①Docker 版](./docs/Deployment.md#%E6%96%B9%E5%BC%8F%E4%B8%80docker%E5%8F%AA%E8%BF%90%E8%A1%8Cserver) / [② ソースコードデプロイ](./docs/Deployment.md#%E6%96%B9%E5%BC%8F%E4%BA%8C%E6%9C%AC%E5%9C%B0%E6%BA%90%E7%A0%81%E5%8F%AA%E8%BF%90%E8%A1%8Cserver)                                                                                                                 | `FunASR`を使用する場合は 2 コア 4G、すべて API の場合は 2 コア 2G が必要 | -                                                                                           |
+| **フルモジュールインストール** | スマート対話、IoT、MCP アクセスポイント、視覚認識、OTA、スマートコントロールパネル | 完全な機能体験、データはデータベースに保存                   | [①Docker 版](./docs/Deployment_all.md#%E6%96%B9%E5%BC%8F%E4%B8%80docker%E8%BF%90%E8%A1%8C%E5%85%A8%E6%A8%A1%E5%9D%97) / [② ソースコードデプロイ](./docs/Deployment_all.md#%E6%96%B9%E5%BC%8F%E4%BA%8C%E6%9C%AC%E5%9C%B0%E6%BA%90%E7%A0%81%E8%BF%90%E8%A1%8C%E5%85%A8%E6%A8%A1%E5%9D%97) / [③ ソースコードデプロイ自動更新チュートリアル](./docs/dev-ops-integration.md) | `FunASR`を使用する場合は 4 コア 8G、すべて API の場合は 2 コア 4G が必要 | [ローカルソースコード起動ビデオチュートリアル](https://www.bilibili.com/video/BV1wBJhz4Ewe) |
 
-> 💡 ヒント：以下は最新のコードでデプロイされたテストプラットフォームです。必要に応じて書き込んでテストできます。同時接続数は6で、データは毎日クリアされます。
+> 💡 ヒント：以下は最新のコードでデプロイされたテストプラットフォームです。必要に応じて書き込んでテストできます。同時接続数は 6 で、データは毎日クリアされます。
 
 ```
 スマートコントロールパネルアドレス: https://2662r3426b.vicp.fun
@@ -189,52 +189,56 @@ Websocketインターフェースアドレス: wss://2662r3426b.vicp.fun/xiaozhi
 ```
 
 #### 🚩 設定の説明と推奨
+
 > [!Note]
-> このプロジェクトでは2つの設定プランを提供しています：
-> 
+> このプロジェクトでは 2 つの設定プランを提供しています：
+>
 > 1. `入門完全無料`設定：個人の家庭での使用に適しており、すべてのコンポーネントは無料プランを採用しているため、追加料金は不要です。
-> 
-> 2. `ストリーミング設定`：デモ、トレーニング、2つ以上の同時接続などのシーンに適しており、ストリーミング処理技術を採用しているため、応答速度が速く、より良い体験が得られます。
-> 
+>
+> 2. `ストリーミング設定`：デモ、トレーニング、2 つ以上の同時接続などのシーンに適しており、ストリーミング処理技術を採用しているため、応答速度が速く、より良い体験が得られます。
+>
 > `0.5.2`バージョン以降、プロジェクトはストリーミング設定をサポートし、以前のバージョンと比較して応答速度が約`2.5秒`向上し、ユーザーエクスペリエンスが大幅に改善されました。
 
-| モジュール名 | 入門完全無料設定 | ストリーミング設定 |
-|:---:|:---:|:---:|
-| ASR(音声認識) | FunASR(ローカル) | 👍FunASRServer または 👍DoubaoStreamASR |
-| LLM(大規模言語モデル) | ChatGLMLLM(Zhipu glm-4-flash) | 👍DoubaoLLM(Volcano doubao-1-5-pro-32k-250115) |
-| VLLM(視覚大規模言語モデル) | ChatGLMVLLM(Zhipu glm-4v-flash) | 👍QwenVLVLLM(Qwen qwen2.5-vl-3b-instructh) |
-| TTS(音声合成) | ✅LinkeraiTTS(Lingxiストリーミング) | 👍HuoshanDoubleStreamTTS(Volcanoデュアルストリーム音声合成) |
-| Intent(意図認識) | function_call(関数呼び出し) | function_call(関数呼び出し) |
-| Memory(記憶機能) | mem_local_short(ローカル短期記憶) | mem_local_short(ローカル短期記憶) |
+|        モジュール名        |           入門完全無料設定           |                      ストリーミング設定                      |
+| :------------------------: | :----------------------------------: | :----------------------------------------------------------: |
+|       ASR(音声認識)        |           FunASR(ローカル)           |           👍FunASRServer または 👍DoubaoStreamASR            |
+|   LLM(大規模言語モデル)    |    ChatGLMLLM(Zhipu glm-4-flash)     |        👍DoubaoLLM(Volcano doubao-1-5-pro-32k-250115)        |
+| VLLM(視覚大規模言語モデル) |   ChatGLMVLLM(Zhipu glm-4v-flash)    |          👍QwenVLVLLM(Qwen qwen2.5-vl-3b-instructh)          |
+|       TTS(音声合成)        | ✅LinkeraiTTS(Lingxi ストリーミング) | 👍HuoshanDoubleStreamTTS(Volcano デュアルストリーム音声合成) |
+|      Intent(意図認識)      |     function_call(関数呼び出し)      |                 function_call(関数呼び出し)                  |
+|      Memory(記憶機能)      |  mem_local_short(ローカル短期記憶)   |              mem_local_short(ローカル短期記憶)               |
 
 #### 🔧 テストツール
+
 このプロジェクトでは、システムの検証と適切なモデルの選択に役立つ以下のテストツールを提供しています：
 
-| ツール名 | 場所 | 使用方法 | 機能説明 |
-|:---:|:---|:---:|:---:|
-| オーディオ対話テストツール | main》xiaozhi-server》test》test_page.html | Google Chromeで直接開く | オーディオの再生と受信機能をテストし、Python側のオーディオ処理が正常かどうかを検証します |
-| モデル応答テストツール1 | main》xiaozhi-server》performance_tester.py | `python performance_tester.py` を実行 | ASR(音声認識)、LLM(大規模言語モデル)、TTS(音声合成)の3つのコアモジュールの応答速度をテストします |
-| モデル応答テストツール2 | main》xiaozhi-server》performance_tester_vllm.py | `python performance_tester_vllm.py` を実行 | VLLM(視覚モデル)の応答速度をテストします |
+|          ツール名          | 場所                                             |                  使用方法                  |                                              機能説明                                              |
+| :------------------------: | :----------------------------------------------- | :----------------------------------------: | :------------------------------------------------------------------------------------------------: |
+| オーディオ対話テストツール | main》xiaozhi-server》test》test_page.html       |          Google Chrome で直接開く          |     オーディオの再生と受信機能をテストし、Python 側のオーディオ処理が正常かどうかを検証します      |
+|  モデル応答テストツール 1  | main》xiaozhi-server》performance_tester.py      |   `python performance_tester.py` を実行    | ASR(音声認識)、LLM(大規模言語モデル)、TTS(音声合成)の 3 つのコアモジュールの応答速度をテストします |
+|  モデル応答テストツール 2  | main》xiaozhi-server》performance_tester_vllm.py | `python performance_tester_vllm.py` を実行 |                              VLLM(視覚モデル)の応答速度をテストします                              |
 
 > 💡 ヒント：モデルの速度をテストする際、キーが設定されているモデルのみがテストされます。
 
 ---
+
 ## 機能一覧 ✨
+
 ### 実装済み ✅
 
-| 機能モジュール | 説明 |
-|:---:|:---|
-| コアサービスアーキテクチャ | WebSocketとHTTPサーバーに基づき、完全なコンソール管理と認証システムを提供 | 
-| 音声対話システム | ストリーミングASR(音声認識)、ストリーミングTTS(音声合成)、VAD(音声活動検出)をサポートし、多言語認識と音声処理をサポート | 
-| スマート対話システム | 複数のLLM(大規模言語モデル)をサポートし、スマートな対話を実現 | 
-| 視覚認識システム | 複数のVLLM(視覚大規模言語モデル)をサポートし、マルチモーダルな対話を実現 | 
-| 意図認識システム | LLM意図認識、Function Call関数呼び出しをサポートし、プラグイン化された意図処理メカニズムを提供 | 
-| 記憶システム | ローカル短期記憶、mem0aiインターフェース記憶をサポートし、記憶要約機能を備える | 
-| ツール呼び出し | クライアントIOTプロトコル、クライアントMCPプロトコル、サーバーMCPプロトコル、MCPアクセスポイントプロトコル、カスタムツール関数をサポート | 
-| 管理バックエンド | Web管理インターフェースを提供し、ユーザー管理、システム設定、デバイス管理をサポート | 
-| テストツール | パフォーマンステストツール、視覚モデルテストツール、オーディオ対話テストツールを提供 | 
-| デプロイサポート | Dockerデプロイとローカルデプロイをサポートし、完全な設定ファイル管理を提供 | 
-| プラグインシステム | 機能プラグインの拡張、カスタムプラグイン開発、プラグインのホットリロードをサポート |
+|       機能モジュール       | 説明                                                                                                                                            |
+| :------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| コアサービスアーキテクチャ | WebSocket と HTTP サーバーに基づき、完全なコンソール管理と認証システムを提供                                                                    |
+|      音声対話システム      | ストリーミング ASR(音声認識)、ストリーミング TTS(音声合成)、VAD(音声活動検出)をサポートし、多言語認識と音声処理をサポート                       |
+|    スマート対話システム    | 複数の LLM(大規模言語モデル)をサポートし、スマートな対話を実現                                                                                  |
+|      視覚認識システム      | 複数の VLLM(視覚大規模言語モデル)をサポートし、マルチモーダルな対話を実現                                                                       |
+|      意図認識システム      | LLM 意図認識、Function Call 関数呼び出しをサポートし、プラグイン化された意図処理メカニズムを提供                                                |
+|        記憶システム        | ローカル短期記憶、mem0ai インターフェース記憶をサポートし、記憶要約機能を備える                                                                 |
+|       ツール呼び出し       | クライアント IOT プロトコル、クライアント MCP プロトコル、サーバー MCP プロトコル、MCP アクセスポイントプロトコル、カスタムツール関数をサポート |
+|      管理バックエンド      | Web 管理インターフェースを提供し、ユーザー管理、システム設定、デバイス管理をサポート                                                            |
+|        テストツール        | パフォーマンステストツール、視覚モデルテストツール、オーディオ対話テストツールを提供                                                            |
+|      デプロイサポート      | Docker デプロイとローカルデプロイをサポートし、完全な設定ファイル管理を提供                                                                     |
+|     プラグインシステム     | 機能プラグインの拡張、カスタムプラグイン開発、プラグインのホットリロードをサポート                                                              |
 
 ### 開発中 🚧
 
@@ -245,96 +249,96 @@ Websocketインターフェースアドレス: wss://2662r3426b.vicp.fun/xiaozhi
 ---
 
 ## 製品エコシステム 👬
-XiaoZhiはエコシステムです。この製品を使用する際には、このエコシステム内の他の優れたプロジェクトもご覧ください。
 
-| プロジェクト名 | プロジェクトアドレス | プロジェクト説明 |
-|:---|:---|:---|
-| XiaoZhi Androidクライアント | [xiaozhi-android-client](https://github.com/TOM88812/xiaozhi-android-client) | xiaozhi-serverをベースにしたAndroid、iOS音声対話アプリケーションで、リアルタイムの音声対話とテキスト対話をサポートします。<br/>現在はflutterバージョンで、iOS、Androidの両プラットフォームに対応しています。 |
-| XiaoZhi PCクライアント | [py-xiaozhi](https://github.com/Huang-junsen/py-xiaozhi) | このプロジェクトは、Pythonで実装されたXiaoBai AIクライアントを提供し、物理的なハードウェアがない場合でも、<br/>コードを通じてXiaoZhi AIの機能を体験できます。 |
-| XiaoZhi Javaサーバーサイド | [xiaozhi-esp32-server-java](https://github.com/joey-zhou/xiaozhi-esp32-server-java) | XiaoZhiオープンソースバックエンドサービスJavaバージョンは、Javaベースのオープンソースプロジェクトです。<br/>フロントエンドとバックエンドのサービスを含み、ユーザーに完全なバックエンドサービスソリューションを提供することを目的としています。 |
+XiaoZhi はエコシステムです。この製品を使用する際には、このエコシステム内の他の優れたプロジェクトもご覧ください。
+
+| プロジェクト名               | プロジェクトアドレス                                                                | プロジェクト説明                                                                                                                                                                                                                                   |
+| :--------------------------- | :---------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| XiaoZhi Android クライアント | [xiaozhi-android-client](https://github.com/TOM88812/xiaozhi-android-client)        | xiaozhi-server をベースにした Android、iOS 音声対話アプリケーションで、リアルタイムの音声対話とテキスト対話をサポートします。<br/>現在は flutter バージョンで、iOS、Android の両プラットフォームに対応しています。                                 |
+| XiaoZhi PC クライアント      | [py-xiaozhi](https://github.com/Huang-junsen/py-xiaozhi)                            | このプロジェクトは、Python で実装された XiaoBai AI クライアントを提供し、物理的なハードウェアがない場合でも、<br/>コードを通じて XiaoZhi AI の機能を体験できます。                                                                                 |
+| XiaoZhi Java サーバーサイド  | [xiaozhi-esp32-server-java](https://github.com/joey-zhou/xiaozhi-esp32-server-java) | XiaoZhi オープンソースバックエンドサービス Java バージョンは、Java ベースのオープンソースプロジェクトです。<br/>フロントエンドとバックエンドのサービスを含み、ユーザーに完全なバックエンドサービスソリューションを提供することを目的としています。 |
 
 ---
 
 ## このプロジェクトがサポートするプラットフォーム/コンポーネントのリスト 📋
 
-### LLM 言語モデル
-
-| 使用方法 | サポートプラットフォーム | 無料プラットフォーム |
-|:---:|:---:|:---:|
-| openai インターフェース呼び出し | Alibaba Cloud Bailian, Volcano Engine Doubao, DeepSeek, Zhipu ChatGLM, Gemini | Zhipu ChatGLM, Gemini |
-| ollama インターフェース呼び出し | Ollama | - |
-| dify インターフェース呼び出し | Dify | - |
-| fastgpt インターフェース呼び出し | Fastgpt | - |
-| coze インターフェース呼び出し | Coze | - |
-
-実際には、openaiインターフェース呼び出しをサポートするすべてのLLMが接続して使用できます。
-
----
-
-### VLLM 視覚モデル
-
-| 使用方法 | サポートプラットフォーム | 無料プラットフォーム |
-|:---:|:---:|:---:|
-| openai インターフェース呼び出し | Alibaba Cloud Bailian, Zhipu ChatGLMVLLM | Zhipu ChatGLMVLLM |
-
-実際には、openaiインターフェース呼び出しをサポートするすべてのVLLMが接続して使用できます。
-
----
-
 ### TTS 音声合成
 
-| 使用方法 | サポートプラットフォーム | 無料プラットフォーム |
-|:---:|:---:|:---:|
-| インターフェース呼び出し | EdgeTTS, Volcano Engine Doubao TTS, Tencent Cloud, Alibaba Cloud TTS, CosyVoiceSiliconflow, TTS302AI, CozeCnTTS, GizwitsTTS, ACGNTTS, OpenAITTS, Lingxi Streaming TTS | Lingxi Streaming TTS, EdgeTTS, CosyVoiceSiliconflow(一部) |
-| ローカルサービス | FishSpeech, GPT_SOVITS_V2, GPT_SOVITS_V3, MinimaxTTS | FishSpeech, GPT_SOVITS_V2, GPT_SOVITS_V3, MinimaxTTS |
+|         使用方法         |                                                                                        サポートプラットフォーム                                                                                         |                   無料プラットフォーム                    |
+| :----------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------: |
+| インターフェース呼び出し | EdgeTTS, Volcano Engine Doubao TTS, Tencent Cloud, Alibaba Cloud TTS, CosyVoiceSiliconflow, TTS302AI, CozeCnTTS, GizwitsTTS, ACGNTTS, OpenAITTS, Lingxi Streaming TTS, Google TTS, Voicevox, ElevenLabs | Lingxi Streaming TTS, EdgeTTS, CosyVoiceSiliconflow(一部) |
+|     ローカルサービス     |                                                                          FishSpeech, GPT_SOVITS_V2, GPT_SOVITS_V3, MinimaxTTS                                                                           |   FishSpeech, GPT_SOVITS_V2, GPT_SOVITS_V3, MinimaxTTS    |
 
 ---
 
 ### VAD 音声活動検出
 
-| タイプ | プラットフォーム名 | 使用方法 | 課金モデル | 備考 |
-|:---:|:---:|:---:|:---:|:---:|
-| VAD | SileroVAD | ローカル使用 | 無料 | | 
+| タイプ | プラットフォーム名 |   使用方法   | 課金モデル | 備考 |
+| :----: | :----------------: | :----------: | :--------: | :--: |
+|  VAD   |     SileroVAD      | ローカル使用 |    無料    |      |
 
 ---
 
 ### ASR 音声認識
 
-| 使用方法 | サポートプラットフォーム | 無料プラットフォーム |
-|:---:|:---:|:---:|
-| ローカル使用 | FunASR, SherpaASR | FunASR, SherpaASR |
-| インターフェース呼び出し | DoubaoASR, FunASRServer, TencentASR, AliyunASR | FunASRServer |
+|         使用方法         |            サポートプラットフォーム            |          無料プラットフォーム          |
+| :----------------------: | :--------------------------------------------: | :------------------------------------: |
+|       ローカル使用       |     FunASR, SherpaASR, Google ASR, Whisper     | FunASR, SherpaASR, Google ASR, Whisper |
+| インターフェース呼び出し | DoubaoASR, FunASRServer, TencentASR, AliyunASR |              FunASRServer              |
 
 ---
 
 ### Memory 記憶ストレージ
 
-| タイプ | プラットフォーム名 | 使用方法 | 課金モデル | 備考 |
-|:---:|:---:|:---:|:---:|:---:|
-| Memory | mem0ai | インターフェース呼び出し | 1000回/月のクォータ | | 
-| Memory | mem_local_short | ローカル要約 | 無料 | | 
+| タイプ | プラットフォーム名 |         使用方法         |      課金モデル      | 備考 |
+| :----: | :----------------: | :----------------------: | :------------------: | :--: |
+| Memory |       mem0ai       | インターフェース呼び出し | 1000 回/月のクォータ |      |
+| Memory |  mem_local_short   |       ローカル要約       |         無料         |      |
 
 ---
 
 ### Intent 意図認識
 
-| タイプ | プラットフォーム名 | 使用方法 | 課金モデル | 備考 |
-|:---:|:---:|:---:|:---:|:---:|
-| Intent | intent_llm | インターフェース呼び出し | LLMによる課金 | 大規模言語モデルによる意図認識、汎用性が高い | 
-| Intent | function_call | インターフェース呼び出し | LLMによる課金 | 大規模言語モデルの関数呼び出しによる意図の完成、高速で効果的 | 
+| タイプ | プラットフォーム名 |         使用方法         |   課金モデル   |                             備考                             |
+| :----: | :----------------: | :----------------------: | :------------: | :----------------------------------------------------------: |
+| Intent |     intent_llm     | インターフェース呼び出し | LLM による課金 |         大規模言語モデルによる意図認識、汎用性が高い         |
+| Intent |   function_call    | インターフェース呼び出し | LLM による課金 | 大規模言語モデルの関数呼び出しによる意図の完成、高速で効果的 |
+
+---
+
+### LLM 言語モデル
+
+|             使用方法             |                               サポートプラットフォーム                                |     無料プラットフォーム      |
+| :------------------------------: | :-----------------------------------------------------------------------------------: | :---------------------------: |
+| openai インターフェース呼び出し  | Alibaba Cloud Bailian, Volcano Engine Doubao, DeepSeek, Zhipu ChatGLM, Gemini, OpenAI | Zhipu ChatGLM, Gemini, OpenAI |
+| ollama インターフェース呼び出し  |                                        Ollama                                         |               -               |
+|  dify インターフェース呼び出し   |                                         Dify                                          |               -               |
+| fastgpt インターフェース呼び出し |                                        Fastgpt                                        |               -               |
+|  coze インターフェース呼び出し   |                                         Coze                                          |               -               |
+
+実際には、openai インターフェース呼び出しをサポートするすべての LLM が接続して使用できます。
+
+---
+
+### VLLM 視覚モデル
+
+|            使用方法             |         サポートプラットフォーム         | 無料プラットフォーム |
+| :-----------------------------: | :--------------------------------------: | :------------------: |
+| openai インターフェース呼び出し | Alibaba Cloud Bailian, Zhipu ChatGLMVLLM |  Zhipu ChatGLMVLLM   |
+
+実際には、openai インターフェース呼び出しをサポートするすべての VLLM が接続して使用できます。
 
 ---
 
 ## 謝辞 🙏
 
-| ロゴ | プロジェクト/会社 | 説明 |
-|:---:|:---:|:---|
-| <img src="./docs/images/logo_bailing.png" width="160"> | [Bailing音声対話ロボット](https://github.com/wwbin2017/bailing) | このプロジェクトは[Bailing音声対話ロボット](https://github.com/wwbin2017/bailing)に触発され、その基盤の上に実装されています | 
-| <img src="./docs/images/logo_tenclass.png" width="160"> | [Tenclass](https://www.tenclass.com/) | [Tenclass](https://www.tenclass.com/)がXiaoZhiエコシステムのために標準的な通信プロトコル、マルチデバイス互換性ソリューション、および高並行性シナリオの実践的なデモンストレーションを策定してくれたことに感謝します。また、このプロジェクトに完全な技術文書サポートを提供してくれました | 
-| <img src="./docs/images/logo_xuanfeng.png" width="160"> | [Xuanfeng Technology](https://github.com/Eric0308) | [Xuanfeng Technology](https://github.com/Eric0308)が関数呼び出しフレームワーク、MCP通信プロトコル、およびプラグイン化された呼び出しメカニズムの実装コードを貢献してくれたことに感謝します。標準化された命令スケジューリングシステムと動的な拡張機能により、フロントエンドデバイス(IoT)の対話効率と機能拡張性が大幅に向上しました | 
-| <img src="./docs/images/logo_huiyuan.png" width="160"> | [Huiyuan Design](http://ui.kwd988.net/) | [Huiyuan Design](http://ui.kwd988.net/)がこのプロジェクトに専門的なビジュアルソリューションを提供し、1000社以上の企業にサービスを提供した設計経験を活かして、このプロジェクトの製品ユーザーエクスペリエンスを向上させてくれたことに感謝します | 
-| <img src="./docs/images/logo_qinren.png" width="160"> | [Xi'an Qinren Information Technology](https://www.029app.com/) | [Xi'an Qinren Information Technology](https://www.029app.com/)がこのプロジェクトのビジュアルシステムを深化させ、マルチシナリオアプリケーションにおける全体的なデザインスタイルの一貫性と拡張性を確保してくれたことに感謝します |
-
+|                          ロゴ                           |                        プロジェクト/会社                         | 説明                                                                                                                                                                                                                                                                                                                              |
+| :-----------------------------------------------------: | :--------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="./docs/images/logo_bailing.png" width="160">  | [Bailing 音声対話ロボット](https://github.com/wwbin2017/bailing) | このプロジェクトは[Bailing 音声対話ロボット](https://github.com/wwbin2017/bailing)に触発され、その基盤の上に実装されています                                                                                                                                                                                                      |
+| <img src="./docs/images/logo_tenclass.png" width="160"> |              [Tenclass](https://www.tenclass.com/)               | [Tenclass](https://www.tenclass.com/)が XiaoZhi エコシステムのために標準的な通信プロトコル、マルチデバイス互換性ソリューション、および高並行性シナリオの実践的なデモンストレーションを策定してくれたことに感謝します。また、このプロジェクトに完全な技術文書サポートを提供してくれました                                          |
+| <img src="./docs/images/logo_xuanfeng.png" width="160"> |        [Xuanfeng Technology](https://github.com/Eric0308)        | [Xuanfeng Technology](https://github.com/Eric0308)が関数呼び出しフレームワーク、MCP 通信プロトコル、およびプラグイン化された呼び出しメカニズムの実装コードを貢献してくれたことに感謝します。標準化された命令スケジューリングシステムと動的な拡張機能により、フロントエンドデバイス(IoT)の対話効率と機能拡張性が大幅に向上しました |
+| <img src="./docs/images/logo_huiyuan.png" width="160">  |             [Huiyuan Design](http://ui.kwd988.net/)              | [Huiyuan Design](http://ui.kwd988.net/)がこのプロジェクトに専門的なビジュアルソリューションを提供し、1000 社以上の企業にサービスを提供した設計経験を活かして、このプロジェクトの製品ユーザーエクスペリエンスを向上させてくれたことに感謝します                                                                                    |
+|  <img src="./docs/images/logo_qinren.png" width="160">  |  [Xi'an Qinren Information Technology](https://www.029app.com/)  | [Xi'an Qinren Information Technology](https://www.029app.com/)がこのプロジェクトのビジュアルシステムを深化させ、マルチシナリオアプリケーションにおける全体的なデザインスタイルの一貫性と拡張性を確保してくれたことに感謝します                                                                                                    |
 
 <a href="https://star-history.com/#xinnan-tech/xiaozhi-esp32-server&Date">
 
